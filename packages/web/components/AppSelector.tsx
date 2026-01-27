@@ -1,22 +1,45 @@
 'use client'
 
-import { useState } from 'react'
-
-const POPULAR_APPS = [
-  'vim', 'tmux', 'vscode', 'git', 'bash',
-  'macos', 'windows', 'gnome', 'chrome', 'firefox'
-]
+import { useState, useEffect } from 'react'
+import { useStore } from '@/lib/store'
 
 export function AppSelector() {
   const [searchQuery, setSearchQuery] = useState('')
+  const [apps, setApps] = useState<string[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const filteredApps = POPULAR_APPS.filter((app) =>
+  useEffect(() => {
+    async function fetchApps() {
+      try {
+        const response = await fetch('/api/apps')
+        const data = await response.json()
+        setApps(data.apps || [])
+      } catch (error) {
+        console.error('Failed to fetch apps:', error)
+        // Fallback to popular apps
+        setApps(['vim', 'tmux', 'vscode', 'git', 'bash', 'macos', 'windows', 'gnome', 'chrome', 'firefox'])
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchApps()
+  }, [])
+
+  const filteredApps = apps.filter((app) =>
     app.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
   const handleSelectApp = (app: string) => {
-    const { useStore } = require('@/lib/store')
     useStore.setState({ selectedApp: app })
+  }
+
+  if (loading) {
+    return (
+      <div className="max-w-2xl mx-auto text-center py-8">
+        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary-600 border-r-transparent"></div>
+        <p className="mt-4 text-gray-500 dark:text-gray-400">Loading applications...</p>
+      </div>
+    )
   }
 
   return (
