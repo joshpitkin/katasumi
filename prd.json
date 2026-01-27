@@ -436,7 +436,8 @@
         "F3 key focuses filters bar",
         "F2 key returns to app selector",
         "Results update in <100ms after query or filter change",
-        "Results show: keys, action, context in square brackets"
+        "Results show: keys, action, context in square brackets",
+        "Create a test for correct paths when running from dist/ directory and add it to the test suite"
       ],
       "stepsToVerify": [
         "Launch TUI and verify app selector is shown",
