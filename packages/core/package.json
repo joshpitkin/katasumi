@@ -14,7 +14,9 @@
     "migrate:status": "node dist/migrate.js status",
     "seed": "node dist/seed.js",
     "verify": "node dist/verify-seed.js",
-    "build-db": "node dist/build-core-db.js"
+    "build-db": "node dist/build-core-db.js",
+    "verify-search": "node dist/verify-search.js",
+    "test-search": "node dist/test-search-simple.js"
   },
   "keywords": [
     "shortcuts",
@@ -30,6 +32,8 @@
     "@libsql/client": "^0.17.0",
     "@prisma/adapter-libsql": "^7.3.0",
     "@prisma/client": "^7.3.0",
+    "@types/better-sqlite3": "^7.6.13",
+    "better-sqlite3": "^12.6.2",
     "dotenv": "^17.2.3",
     "prisma": "^7.3.0"
   }
