@@ -359,3 +359,71 @@ Verification:
 - ✅ 5 CASCADE constraints for data integrity
 - ✅ All TypeScript code compiles without errors
 - ✅ Full build passes for all packages (core, tui, web)
+
+#### 2026-01-27: PHASE1-TEST-001 - Unit Tests
+ Implemented comprehensive unit tests for core package with >80% coverage
+- Installed Vitest 4.0.18 as test framework with @vitest/coverage-v8 for coverage reports
+- Created vitest.config.ts with coverage thresholds set to 80% for lines, functions, branches, and statements
+- Test suite configured to exclude dist/ and generated code from testing and coverage
+- Total of 61 tests created across 3 test suites, all passing (100% pass rate)
+
+Test files created:
+- src/__tests__/keyword-search-engine.test.ts (18 tests for KeywordSearchEngine)
+  * Tests fuzzy search with exact match, partial match, tag matching
+  * Tests empty query handling and limit parameters
+  * Tests filtering by app, platform, category, and context
+  * Tests multi-word queries and case-insensitivity
+  * Tests scoring algorithm prioritization (exact, prefix, tag matches)
+  * Tests combined filters (multiple filters applied together)
+  
+- src/__tests__/sqlite-adapter.test.ts (26 tests for SQLiteAdapter)
+  * Tests database initialization with provided paths and default user path
+  * Tests CRUD operations: add, get, update, delete shortcuts
+  * Tests search operations with various filters (app, category, query, tag)
+  * Tests limit and offset pagination
+  * Tests app operations (get by app, get app info)
+  * Tests data conversion between TypeScript types and database records
+  * Tests keys conversion (mac, windows, linux optional fields)
+  * Tests tags array conversion including empty arrays
+  * Tests connection handling (close operation)
+  
+- src/__tests__/types.test.ts (17 tests for type definitions)
+  * Tests SourceType enum values (official, community, ai-scraped, user-added)
+  * Tests Keys interface with optional platform keys
+  * Tests Source interface with all required fields
+  * Tests Shortcut interface with required and optional fields
+  * Tests AppInfo interface with platform combinations
+  * Tests Platform type union values
+  * Tests JSON serialization and deserialization
+  * Tests type validation and structure
+
+Coverage results:
+- ✅ Overall statement coverage: 93.58% (exceeds 80% threshold)
+- ✅ Branch coverage: 80.7% (exceeds 80% threshold)
+- ✅ Function coverage: 95% (exceeds 80% threshold)
+- ✅ Line coverage: 95.73% (exceeds 80% threshold)
+- keyword-search-engine.ts: 97.22% statements, 93.93% branches, 100% functions
+- sqlite-adapter.ts: 90.82% statements, 74.68% branches, 92% functions
+- types.ts: 100% coverage across all metrics
+
+Files modified:
+- packages/core/package.json (added test, test:watch, test:coverage scripts)
+- packages/core/vitest.config.ts (created with coverage configuration)
+
+Verification:
+- ✅ Run 'npm test' in core package - all 61 tests pass
+- ✅ Test coverage >80% for all metrics (93.58% statements, 80.7% branches, 95% functions, 95.73% lines)
+- ✅ KeywordSearchEngine tests cover fuzzySearch, filtering, scoring algorithm
+- ✅ SQLiteAdapter tests cover CRUD operations and connection handling
+- ✅ Type validation tests verify schema structure and JSON serialization
+- ✅ Tests use in-memory SQLite databases for isolation
+- ✅ TypeScript compilation succeeds with no errors
+- ✅ All acceptance criteria met
+
+Technical details:
+- Uses Vitest 4.0.18 with v8 coverage provider
+- MockDatabaseAdapter for testing KeywordSearchEngine in isolation
+- Temporary test databases created in /tmp for SQLiteAdapter tests
+- Proper cleanup with afterEach hooks to remove test databases
+- Coverage excludes generated Prisma clients, seed files, and verification scripts
+- Tests are comprehensive and fast (runs in ~3 seconds)

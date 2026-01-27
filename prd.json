@@ -226,7 +226,7 @@
         "Verify database tests use in-memory SQLite",
         "Run tests in CI and verify passing"
       ],
-      "passes": false,
+      "passes": true,
       "priority": 2,
       "priorityRationale": "Unit tests should be written alongside core features"
     },

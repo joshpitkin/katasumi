@@ -8,6 +8,9 @@
     "build": "prisma generate && prisma generate --schema=prisma/schema.postgres.prisma && tsc --build && npm run copy-prisma",
     "copy-prisma": "mkdir -p dist/generated && cp -r src/generated/prisma dist/generated/ && cp -r src/generated/prisma-postgres dist/generated/",
     "dev": "tsc --build --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "prisma:generate": "prisma generate",
     "migrate": "node dist/migrate.js",
     "migrate:rollback": "node dist/migrate.js rollback",
@@ -27,7 +30,9 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "typescript": "^5.3.3"
+    "@vitest/coverage-v8": "^4.0.18",
+    "typescript": "^5.3.3",
+    "vitest": "^4.0.18"
   },
   "dependencies": {
     "@libsql/client": "^0.17.0",
