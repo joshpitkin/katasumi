@@ -1386,3 +1386,39 @@ FILES MODIFIED:
 - packages/tui/src/__tests__/keyboard-navigation.test.ts (CREATED)
 - prd.json (UPDATED: marked PHASE2-TUI-010 as passes=true)
 
+
+========================================
+Date: 2026-01-27T23:20:00.000Z
+Task: PHASE3-WEB-002 - Authentication UI
+Status: COMPLETED
+========================================
+
+Implemented comprehensive login/signup page with the following features:
+
+ Login and signup forms on /login page
+ Email and password inputs with validation
+ Form validation (empty fields, password length)
+ Error messages for invalid credentials
+ Success redirects to home page (/)
+ JWT token storage in localStorage
+ OAuth buttons for Google and GitHub (placeholders)
+ Dark mode support
+ Responsive design with Tailwind CSS
+ Toggle between login and signup modes
+ Backend API routes already implemented:
+   - POST /api/auth/login
+   - POST /api/auth/signup
+   - POST /api/auth/logout
+ Password hashing with bcrypt in backend
+ All tests passing (10 tests)
+ TypeScript type checks passing
+
+Files modified:
+- packages/web/app/login/page.tsx (full implementation)
+
+Tests verified:
+- npm run test --workspace=@katasumi/web ✓
+- npm test (all packages) ✓
+- TypeScript type check ✓
+
+All acceptance criteria met.
