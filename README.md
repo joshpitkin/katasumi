@@ -62,7 +62,80 @@ katasumi/
 
 ## 🚀 Getting Started
 
-> **Note**: Detailed installation and setup instructions will be added as development progresses.
+### Prerequisites
+
+- Node.js 18+ and npm (or pnpm)
+- For development: The project uses Turborepo for monorepo management
+
+### Installation & Setup
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/joshpitkin/katasumi.git
+   cd katasumi
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Build the core package (required before first run):**
+   ```bash
+   npm run build
+   ```
+   
+   This step generates Prisma clients and compiles TypeScript. It's required before running `npm run dev` for the first time.
+
+4. **Start development servers:**
+   
+   **Run all packages in parallel (recommended):**
+   ```bash
+   npm run dev
+   ```
+   This starts both TUI and Web development servers simultaneously.
+
+   **Run TUI only:**
+   ```bash
+   npm run dev --workspace=@katasumi/tui
+   ```
+   The TUI (Terminal User Interface) will watch for file changes and recompile automatically.
+
+   **Run Web only:**
+   ```bash
+   npm run dev --workspace=@katasumi/web
+   ```
+   The web development server will start at http://localhost:3000 with hot reload enabled.
+
+### Development Workflow
+
+**Working on the TUI:**
+- Changes to `packages/tui/src/**` will auto-recompile via TypeScript watch mode
+- Changes to `packages/core/src/**` require rebuilding core: `npm run build --workspace=@katasumi/core`
+- Test the TUI by running: `node packages/tui/dist/index.js`
+
+**Working on the Web app:**
+- Changes to `packages/web/**` will hot-reload automatically via Next.js Fast Refresh
+- Changes to `packages/core/src/**` require rebuilding core: `npm run build --workspace=@katasumi/core`
+- Access the web app at http://localhost:3000
+- Check the browser console for any runtime errors
+
+**Working on Core:**
+- After modifying `packages/core/src/**`, run:
+  ```bash
+  npm run build --workspace=@katasumi/core
+  ```
+- This regenerates Prisma clients and compiles TypeScript
+- Both TUI and Web will pick up the changes on their next rebuild/reload
+
+### First-Time Setup Notes
+
+The build step is crucial on first setup as it:
+- Generates Prisma clients for both SQLite and PostgreSQL
+- Compiles TypeScript to ensure type definitions are available
+- Creates necessary generated files in the `packages/core/src/generated` directory
+
+If you encounter type errors when running `npm run dev`, make sure you've run `npm run build` first.
 
 ### Running Unobtrusively
 
