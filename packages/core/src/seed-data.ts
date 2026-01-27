@@ -974,3 +974,5 @@ export const shortcuts: Shortcut[] = [
   { id: 'gnome-54', app: 'gnome', action: 'Properties', keys: { linux: 'Alt+Enter' }, context: 'Files', category: 'Files', tags: ['properties'], source: { type: SourceType.OFFICIAL, url: 'https://help.gnome.org/users/gnome-help/stable/shell-keyboard-shortcuts.html', scrapedAt: new Date('2026-01-26'), confidence: 1.0 } },
   { id: 'gnome-55', app: 'gnome', action: 'Open Location', keys: { linux: 'Ctrl+L' }, context: 'Files', category: 'Files', tags: ['location', 'address'], source: { type: SourceType.OFFICIAL, url: 'https://help.gnome.org/users/gnome-help/stable/shell-keyboard-shortcuts.html', scrapedAt: new Date('2026-01-26'), confidence: 1.0 } },
 ];
+
+export const seedData = { apps, shortcuts };

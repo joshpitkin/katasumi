@@ -5,14 +5,16 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "prisma generate && tsc --build",
+    "build": "prisma generate && tsc --build && npm run copy-prisma",
+    "copy-prisma": "mkdir -p dist/generated && cp -r src/generated/prisma dist/generated/",
     "dev": "tsc --build --watch",
     "prisma:generate": "prisma generate",
     "migrate": "node dist/migrate.js",
     "migrate:rollback": "node dist/migrate.js rollback",
     "migrate:status": "node dist/migrate.js status",
     "seed": "node dist/seed.js",
-    "verify": "node dist/verify-seed.js"
+    "verify": "node dist/verify-seed.js",
+    "build-db": "node dist/build-core-db.js"
   },
   "keywords": [
     "shortcuts",

@@ -199,3 +199,50 @@ Database schema supports:
 - Category and tags for organization and search
 - Source metadata (type, URL, scrapeDate, confidence)
 - Proper indexing on app, action, and category fields
+
+#### 2026-01-27: PHASE1-DB-001 - SQLite (TUI)
+ Implemented SQLite database adapter for TUI with dual database architecture
+- Created DatabaseAdapter interface defining standard operations for all database backends
+- Implemented SQLiteAdapter class with support for two separate databases:
+  * shortcuts.db: Bundled, read-only core shortcuts database
+  * user-data.db: Local, read-write database for user-added shortcuts
+- shortcuts.db contains 770 shortcuts across 8 popular applications (vim, tmux, vscode, git, bash, macOS, Windows, GNOME)
+- user-data.db automatically created in ~/.katasumi/ directory on first run
+- Both databases use identical schema defined in Prisma schema.prisma
+- Queries transparently search across both databases and combine results
+- Read-write operations (add, update, delete) only affect user-data.db
+- Read operations query both databases and merge results
+- Implemented async initialization pattern to ensure user database schema is created on first use
+
+Files created:
+- packages/core/src/database-adapter.ts (interface definition with SearchOptions)
+- packages/core/src/sqlite-adapter.ts (SQLiteAdapter implementation)
+- packages/core/src/build-core-db.ts (script to build bundled shortcuts.db)
+- packages/core/data/shortcuts.db (bundled core shortcuts database - 300KB)
+- packages/tui/src/test-adapter.ts (comprehensive test suite for adapter)
+- packages/tui/src/verify-db-001.ts (acceptance criteria verification script)
+
+Files modified:
+- packages/core/src/index.ts (export DatabaseAdapter and SQLiteAdapter)
+- packages/core/package.json (added build-db and copy-prisma scripts)
+- packages/core/src/seed-data.ts (added seedData export)
+- packages/tui/package.json (added test-adapter and verify scripts)
+
+Verification:
+- ✅ SQLiteAdapter implements DatabaseAdapter interface (compile-time verified)
+- ✅ shortcuts.db contains all 5 required apps: vim (125), tmux (62), vscode (223), git (45), bash (35)
+- ✅ shortcuts.db exists at packages/core/data/shortcuts.db (300KB)
+- ✅ user-data.db created at ~/.katasumi/user-data.db on first adapter initialization
+- ✅ user-data.db supports read-write operations for custom shortcuts
+- ✅ Both databases use identical Prisma schema with shortcuts and app_info tables
+- ✅ Search queries transparently query both databases and combine results
+- ✅ Write operations only modify user-data.db (core database remains read-only)
+- ✅ All 10 test cases pass including CRUD operations on user database
+- ✅ All 7 acceptance criteria verified successfully
+
+Technical details:
+- Uses Prisma ORM 7.3.0 with @prisma/adapter-libsql for SQLite support
+- Implements async initialization to create user database schema on first use
+- DatabaseAdapter interface provides abstraction for future PostgreSQL implementation
+- SearchOptions supports filtering by query, app, category, tag with pagination
+- Proper TypeScript types throughout with compile-time safety
