@@ -1422,3 +1422,67 @@ Tests verified:
 - TypeScript type check ✓
 
 All acceptance criteria met.
+
+## 2026-01-27T23:50:00Z - PHASE3-WEB-004: Full-Phrase Search Mode UI
+
+### Implementation Summary
+Implemented Full-Phrase search mode UI with natural language input and cross-app results.
+
+### Changes Made
+1. **Store Updates (lib/store.ts)**
+   - Added `userTier` state ('free' | 'premium')
+   - Added `aiQueryCount` state for tracking AI usage
+   - Added `setUserTier` and `decrementAIQueryCount` actions
+
+2. **SearchBar Enhancement (components/SearchBar.tsx)**
+   - Added support for Full-Phrase mode with larger input (py-4, text-lg)
+   - Changed placeholder text based on mode
+   - Enabled cross-app search (no app filter in Full-Phrase mode)
+   - Added AI query count decrement on AI-enabled searches
+
+3. **ResultsList Grouping (components/ResultsList.tsx)**
+   - Implemented app-based grouping for Full-Phrase mode
+   - Added app name headers with result counts
+   - Maintained flat list for App-First mode
+   - Added visual dividers between app groups
+
+4. **Header UI Controls (components/Header.tsx)**
+   - Added clickable mode toggle button
+   - Added AI toggle button with visual state (green for ON)
+   - Added AI status indicator showing query count or "Unlimited"
+   - Displays different query counts for free vs premium users
+
+5. **Keyboard Shortcuts (app/page.tsx)**
+   - Added Cmd+A keyboard shortcut for AI toggle in Full-Phrase mode
+   - Maintained existing F4 shortcut for AI toggle
+
+6. **Testing (full-phrase-mode.test.ts)**
+   - Created 9 comprehensive tests for Full-Phrase mode
+   - Tests cover cross-app search, natural language queries, grouping, AI toggle, and user tiers
+   - All 19 tests pass in web package
+
+### Acceptance Criteria Met
+ Tab key toggles between App-First and Full-Phrase modes
+ Mode toggle button visible and clickable
+ Large search input with placeholder text
+ Results grouped by app with clear dividers
+ AI toggle button (Cmd+A or click)
+ AI status indicator shows ON/OFF and remaining query count
+ Results show app icon/name, keys, action, context
+ Premium users see 'Unlimited' instead of query count
+
+### Verification
+- ✅ All 19 tests pass in web package
+- ✅ TypeScript type checks pass
+- ✅ All root-level tests pass (6 tasks successful)
+
+### Files Modified
+- packages/web/lib/store.ts
+- packages/web/components/SearchBar.tsx
+- packages/web/components/ResultsList.tsx
+- packages/web/components/Header.tsx
+- packages/web/app/page.tsx
+
+### Files Created
+- packages/web/__tests__/full-phrase-mode.test.ts
+

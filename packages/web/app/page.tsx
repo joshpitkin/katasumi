@@ -27,8 +27,8 @@ export default function Home() {
         toggleMode()
       }
       
-      // F4 - Toggle AI
-      if (e.key === 'F4') {
+      // F4 or Cmd+A - Toggle AI
+      if (e.key === 'F4' || ((e.metaKey || e.ctrlKey) && e.key === 'a' && mode === 'full-phrase')) {
         e.preventDefault()
         toggleAI()
       }
@@ -61,7 +61,7 @@ export default function Home() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [toggleMode, toggleAI, setShowHelp, setShowPlatformSelector, setShowSettings])
+  }, [toggleMode, toggleAI, setShowHelp, setShowPlatformSelector, setShowSettings, mode])
 
   return (
     <>

@@ -18,6 +18,10 @@ interface AppState {
   showPlatformSelector: boolean
   showSettings: boolean
   
+  // User state
+  userTier: 'free' | 'premium'
+  aiQueryCount: number
+  
   // Search state
   selectedApp: string | null
   query: string
@@ -33,6 +37,8 @@ interface AppState {
   setShowHelp: (show: boolean) => void
   setShowPlatformSelector: (show: boolean) => void
   setShowSettings: (show: boolean) => void
+  setUserTier: (tier: 'free' | 'premium') => void
+  decrementAIQueryCount: () => void
   
   selectApp: (app: string | null) => void
   setQuery: (query: string) => void
@@ -60,6 +66,10 @@ export const useStore = create<AppState>((set) => ({
   showPlatformSelector: false,
   showSettings: false,
   
+  // Initial user state
+  userTier: 'free',
+  aiQueryCount: 10, // Free users get 10 AI queries
+  
   // Initial search state
   selectedApp: null,
   query: '',
@@ -77,6 +87,10 @@ export const useStore = create<AppState>((set) => ({
   setShowHelp: (showHelp) => set({ showHelp }),
   setShowPlatformSelector: (showPlatformSelector) => set({ showPlatformSelector }),
   setShowSettings: (showSettings) => set({ showSettings }),
+  setUserTier: (userTier) => set({ userTier }),
+  decrementAIQueryCount: () => set((state) => ({
+    aiQueryCount: Math.max(0, state.aiQueryCount - 1)
+  })),
   
   // Search actions
   selectApp: (selectedApp) => set({ selectedApp }),
