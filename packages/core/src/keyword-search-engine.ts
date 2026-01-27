@@ -149,6 +149,106 @@ export class KeywordSearchEngine {
   }
 
   /**
+   * Search for shortcuts by key combination (reverse lookup)
+   * @param keys Key combination string (e.g., "Cmd+K", "⌘K", "Ctrl+C")
+   * @param platform Optional platform to filter results. If not provided, searches all platforms
+   * @returns Array of shortcuts that match the key combination
+   */
+  async searchByKeys(keys: string, platform?: Platform): Promise<Shortcut[]> {
+    // Normalize the input key string
+    const normalizedInput = this.normalizeKeys(keys);
+
+    // Get all shortcuts from the database
+    const searchOptions: SearchOptions = {
+      limit: 10000,
+    };
+    const shortcuts = await this.adapter.searchShortcuts(searchOptions);
+
+    // Filter shortcuts that match the key combination
+    const matchingShortcuts: Shortcut[] = [];
+
+    for (const shortcut of shortcuts) {
+      if (platform) {
+        // Search for specific platform
+        const platformKey = shortcut.keys[platform];
+        if (platformKey && this.normalizeKeys(platformKey) === normalizedInput) {
+          matchingShortcuts.push(shortcut);
+        }
+      } else {
+        // Search across all platforms
+        const platforms: Platform[] = ['mac', 'windows', 'linux'];
+        for (const p of platforms) {
+          const platformKey = shortcut.keys[p];
+          if (platformKey && this.normalizeKeys(platformKey) === normalizedInput) {
+            matchingShortcuts.push(shortcut);
+            break; // Add shortcut only once even if it matches on multiple platforms
+          }
+        }
+      }
+    }
+
+    return matchingShortcuts;
+  }
+
+  /**
+   * Normalize key combination strings to a standard format
+   * Handles various representations like Cmd/⌘/Command, Ctrl/Control, etc.
+   * @param keys Raw key combination string
+   * @returns Normalized key string in lowercase with standardized separators
+   */
+  private normalizeKeys(keys: string): string {
+    if (!keys) return '';
+
+    // Convert to lowercase for case-insensitive matching
+    let normalized = keys.toLowerCase().trim();
+
+    // Replace Unicode symbols with text equivalents
+    normalized = normalized.replace(/⌘/g, 'cmd');
+    normalized = normalized.replace(/⌥/g, 'alt');
+    normalized = normalized.replace(/⇧/g, 'shift');
+    normalized = normalized.replace(/⌃/g, 'ctrl');
+    normalized = normalized.replace(/⏎/g, 'enter');
+    normalized = normalized.replace(/⌫/g, 'backspace');
+    normalized = normalized.replace(/⎋/g, 'esc');
+    normalized = normalized.replace(/␣/g, 'space');
+    normalized = normalized.replace(/⇥/g, 'tab');
+
+    // Normalize modifier key names
+    normalized = normalized.replace(/\bcommand\b/g, 'cmd');
+    normalized = normalized.replace(/\bcontrol\b/g, 'ctrl');
+    normalized = normalized.replace(/\boption\b/g, 'alt');
+    normalized = normalized.replace(/\bmeta\b/g, 'cmd');
+    normalized = normalized.replace(/\bsuper\b/g, 'cmd');
+    normalized = normalized.replace(/\bwin\b/g, 'cmd');
+
+    // Normalize separators: convert various separator types to '+'
+    normalized = normalized.replace(/[\s\-_]+/g, '+');
+    normalized = normalized.replace(/\+{2,}/g, '+'); // Remove duplicate plus signs
+
+    // Split by '+', trim each part, sort modifiers, and rejoin
+    const parts = normalized.split('+').map(p => p.trim()).filter(p => p.length > 0);
+    
+    // Define modifier order for consistency
+    const modifierOrder = ['ctrl', 'alt', 'shift', 'cmd'];
+    const modifiers: string[] = [];
+    const nonModifiers: string[] = [];
+
+    for (const part of parts) {
+      if (modifierOrder.includes(part)) {
+        modifiers.push(part);
+      } else {
+        nonModifiers.push(part);
+      }
+    }
+
+    // Sort modifiers by their defined order
+    modifiers.sort((a, b) => modifierOrder.indexOf(a) - modifierOrder.indexOf(b));
+
+    // Combine modifiers + non-modifiers
+    return [...modifiers, ...nonModifiers].join('+');
+  }
+
+  /**
    * Calculate fuzzy similarity score using Levenshtein distance
    * @param str1 First string
    * @param str2 Second string

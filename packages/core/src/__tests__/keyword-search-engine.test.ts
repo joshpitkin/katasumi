@@ -252,4 +252,102 @@ describe('KeywordSearchEngine', () => {
       expect(results.every(r => r.app === 'vim' && r.category === 'Editing')).toBe(true);
     });
   });
+
+  describe('searchByKeys', () => {
+    it('should find shortcuts by exact key match on mac', async () => {
+      const results = await engine.searchByKeys('Cmd+C', 'mac');
+      expect(results.length).toBeGreaterThan(0);
+      expect(results.some(r => r.keys.mac === 'Cmd+C')).toBe(true);
+    });
+
+    it('should find shortcuts by exact key match on windows', async () => {
+      const results = await engine.searchByKeys('Ctrl+C', 'windows');
+      expect(results.length).toBeGreaterThan(0);
+      expect(results.some(r => r.keys.windows === 'Ctrl+C')).toBe(true);
+    });
+
+    it('should normalize ⌘K to Cmd+K', async () => {
+      const unicodeResults = await engine.searchByKeys('⌘K', 'mac');
+      const textResults = await engine.searchByKeys('Cmd+K', 'mac');
+      expect(unicodeResults).toEqual(textResults);
+    });
+
+    it('should normalize Command+K to Cmd+K', async () => {
+      const commandResults = await engine.searchByKeys('Command+K', 'mac');
+      const cmdResults = await engine.searchByKeys('Cmd+K', 'mac');
+      expect(commandResults).toEqual(cmdResults);
+    });
+
+    it('should be case-insensitive', async () => {
+      const lowerResults = await engine.searchByKeys('cmd+k', 'mac');
+      const upperResults = await engine.searchByKeys('CMD+K', 'mac');
+      expect(lowerResults).toEqual(upperResults);
+    });
+
+    it('should find shortcuts with simple keys in vim', async () => {
+      const results = await engine.searchByKeys('yy', 'mac');
+      expect(results.length).toBeGreaterThan(0);
+      const copyLineShortcut = results.find(r => r.action === 'Copy line' && r.app === 'vim');
+      expect(copyLineShortcut).toBeDefined();
+    });
+
+    it('should find shortcuts with single character keys', async () => {
+      const results = await engine.searchByKeys('p', 'linux');
+      expect(results.length).toBeGreaterThan(0);
+      const pasteShortcut = results.find(r => r.action === 'Paste' && r.app === 'vim');
+      expect(pasteShortcut).toBeDefined();
+    });
+
+    it('should return empty array for nonexistent key combination', async () => {
+      const results = await engine.searchByKeys('Cmd+Shift+F99', 'mac');
+      expect(results).toEqual([]);
+    });
+
+    it('should search across all platforms when platform not specified', async () => {
+      const results = await engine.searchByKeys('Ctrl+C');
+      expect(results.length).toBeGreaterThan(0);
+      // Should find shortcuts from multiple platforms
+      const hasWindows = results.some(r => r.keys.windows === 'Ctrl+C');
+      const hasLinux = results.some(r => r.keys.linux === 'Ctrl+C');
+      expect(hasWindows || hasLinux).toBe(true);
+    });
+
+    it('should handle complex key combinations with multiple modifiers', async () => {
+      const results = await engine.searchByKeys('Ctrl+B %', 'mac');
+      expect(results.length).toBeGreaterThan(0);
+      const splitPaneShortcut = results.find(r => r.action === 'Split pane horizontally');
+      expect(splitPaneShortcut).toBeDefined();
+    });
+
+    it('should normalize different separator types', async () => {
+      const plusResults = await engine.searchByKeys('Cmd+C', 'mac');
+      const spaceResults = await engine.searchByKeys('Cmd C', 'mac');
+      const dashResults = await engine.searchByKeys('Cmd-C', 'mac');
+      expect(plusResults).toEqual(spaceResults);
+      expect(plusResults).toEqual(dashResults);
+    });
+
+    it('should handle Control as Ctrl', async () => {
+      const controlResults = await engine.searchByKeys('Control+C', 'windows');
+      const ctrlResults = await engine.searchByKeys('Ctrl+C', 'windows');
+      expect(controlResults).toEqual(ctrlResults);
+    });
+
+    it('should not return duplicate shortcuts when matching multiple platforms', async () => {
+      const results = await engine.searchByKeys('Ctrl+C');
+      // Get unique shortcut IDs
+      const uniqueIds = new Set(results.map(r => r.id));
+      expect(results.length).toBe(uniqueIds.size);
+    });
+
+    it('should handle empty key string', async () => {
+      const results = await engine.searchByKeys('');
+      expect(results).toEqual([]);
+    });
+
+    it('should handle whitespace-only key string', async () => {
+      const results = await engine.searchByKeys('   ');
+      expect(results).toEqual([]);
+    });
+  });
 });

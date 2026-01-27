@@ -773,3 +773,47 @@ TECHNICAL NOTES:
 - TypeScript types ensure type safety across all providers
 - Mock fetch used in tests to avoid real API calls
 
+
+## 2026-01-27 - PHASE1-SEARCH-003: searchByKeys Implementation
+
+### Task: Implement reverse lookup - search by key combination
+
+**What was implemented:**
+- Added `searchByKeys()` method to KeywordSearchEngine class
+- Accepts key string and optional platform parameter
+- Normalizes key variants: Cmd/⌘/Command, Ctrl/Control, Alt/Option, etc.
+- Handles Unicode symbols: ⌘, ⌥, ⇧, ⌃, ⏎, ⌫, ⎋, ␣, ⇥
+- Normalizes separators: converts spaces, dashes, underscores to '+'
+- Case-insensitive matching
+- Supports multi-platform search (when platform not specified)
+- Returns shortcuts matching the key combination
+- Added comprehensive test suite (15 test cases)
+
+**Key features:**
+1. **Key normalization**: Converts various key representations to a standard format
+   - Example: "Cmd+K", "⌘K", "Command+K", "cmd-k" all normalize to "cmd+k"
+2. **Platform filtering**: Can search specific platform or all platforms
+3. **Duplicate prevention**: When searching all platforms, each shortcut appears only once
+4. **Empty string handling**: Returns empty array for empty or whitespace-only input
+5. **Complex combinations**: Handles multi-modifier keys like "Ctrl+B %"
+
+**Tests verified:**
+- Exact key matches on specific platforms (mac, windows, linux)
+- Unicode symbol normalization (⌘K → Cmd+K)
+- Long-form normalization (Command+K → Cmd+K, Control+C → Ctrl+C)
+- Case-insensitive matching
+- Simple and single character keys (vim shortcuts)
+- Cross-platform search
+- Complex key combinations with multiple modifiers
+- Different separator types (space, dash, underscore, plus)
+- Edge cases (empty string, nonexistent keys)
+- No duplicate shortcuts in multi-platform results
+
+**Files modified:**
+- `/workspace/packages/core/src/keyword-search-engine.ts` - Added searchByKeys method and normalizeKeys helper
+- `/workspace/packages/core/src/__tests__/keyword-search-engine.test.ts` - Added 15 comprehensive tests
+
+**Test results:**
+- All 33 keyword search engine tests pass (including 15 new searchByKeys tests)
+- All 95 core package tests pass
+- Build successful with no TypeScript errors

@@ -387,7 +387,7 @@
         "Run 'npm run test --workspace=@katasumi/core' to execute searchByKeys tests",
         "Run 'npm test' from root to execute all package tests"
       ],
-      "passes": false,
+      "passes": true,
       "priority": 3,
       "priorityRationale": "Reverse lookup depends on basic search working"
     },
