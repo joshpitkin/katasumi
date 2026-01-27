@@ -166,9 +166,10 @@
         "Query user_shortcuts by app and verify index is used (EXPLAIN query)",
         "Verify updated_at index exists on user_shortcuts table"
       ],
-      "passes": false,
+      "passes": true,
       "priority": 2,
-      "priorityRationale": "Web database needed for cloud features, can develop in parallel with TUI DB"
+      "priorityRationale": "Web database needed for cloud features, can develop in parallel with TUI DB",
+      "lastUpdated": "2026-01-27"
     },
     {
       "id": "PHASE1-SEARCH-001",

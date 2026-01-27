@@ -56,3 +56,111 @@ model AppInfo {
   @@index([category])
   @@map("app_info")
 }
+
+// Users table - stores user accounts for web app
+model User {
+  id             String   @id @default(uuid())
+  email          String   @unique
+  tier           String   @default("free") // 'free' | 'pro' | 'enterprise'
+  apiTokenHash   String?  @map("api_token_hash")
+  
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  
+  userShortcuts  UserShortcut[]
+  collections    Collection[]
+  syncLogs       SyncLog[]
+  
+  @@index([email])
+  @@index([tier])
+  @@map("users")
+}
+
+// UserShortcuts table - stores user-created shortcuts
+model UserShortcut {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  app       String   // Application identifier (e.g., "vim", "vscode")
+  action    String   // Action description (e.g., "Copy", "Paste")
+  
+  // Platform-specific keyboard shortcuts
+  keysMac     String?  @map("keys_mac")
+  keysWindows String?  @map("keys_windows")
+  keysLinux   String?  @map("keys_linux")
+  
+  context   String?  // Context where shortcut applies (e.g., "Normal Mode", "Insert Mode")
+  category  String?  // Category grouping (e.g., "Editing", "Navigation")
+  tags      String   // Comma-separated tags for searching
+  
+  // Source metadata
+  sourceType       String   @map("source_type") // 'official' | 'community' | 'ai-scraped' | 'user-added'
+  sourceUrl        String?  @map("source_url")
+  sourceScrapedAt  DateTime? @map("source_scraped_at")
+  sourceConfidence Float?   @map("source_confidence")
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  user             User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  collectionItems  CollectionShortcut[]
+  
+  @@index([userId])
+  @@index([app])
+  @@index([action])
+  @@index([category])
+  @@map("user_shortcuts")
+}
+
+// Collections table - stores user-created collections of shortcuts
+model Collection {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  name        String
+  description String?
+  isPublic    Boolean  @default(false) @map("is_public")
+  
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  user        User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shortcuts   CollectionShortcut[]
+  
+  @@index([userId])
+  @@index([isPublic])
+  @@map("collections")
+}
+
+// CollectionShortcuts junction table - links shortcuts to collections
+model CollectionShortcut {
+  id           String   @id @default(uuid())
+  collectionId String   @map("collection_id")
+  shortcutId   String   @map("shortcut_id")
+  order        Int      @default(0) // For custom ordering within collection
+  
+  createdAt    DateTime @default(now()) @map("created_at")
+  
+  collection   Collection   @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  shortcut     UserShortcut @relation(fields: [shortcutId], references: [id], onDelete: Cascade)
+  
+  @@unique([collectionId, shortcutId])
+  @@index([collectionId])
+  @@index([shortcutId])
+  @@map("collection_shortcuts")
+}
+
+// SyncLogs table - audit trail for sync operations
+model SyncLog {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  operation String   // 'push' | 'pull' | 'merge'
+  status    String   // 'success' | 'failed' | 'partial'
+  details   String?  // JSON string with additional details
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([createdAt])
+  @@map("sync_logs")
+}

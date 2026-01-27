@@ -5,8 +5,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "prisma generate && tsc --build && npm run copy-prisma",
-    "copy-prisma": "mkdir -p dist/generated && cp -r src/generated/prisma dist/generated/",
+    "build": "prisma generate && prisma generate --schema=prisma/schema.postgres.prisma && tsc --build && npm run copy-prisma",
+    "copy-prisma": "mkdir -p dist/generated && cp -r src/generated/prisma dist/generated/ && cp -r src/generated/prisma-postgres dist/generated/",
     "dev": "tsc --build --watch",
     "prisma:generate": "prisma generate",
     "migrate": "node dist/migrate.js",
@@ -16,7 +16,8 @@
     "verify": "node dist/verify-seed.js",
     "build-db": "node dist/build-core-db.js",
     "verify-search": "node dist/verify-search.js",
-    "test-search": "node dist/test-search-simple.js"
+    "test-search": "node dist/test-search-simple.js",
+    "verify-db-002": "node dist/verify-db-002.js"
   },
   "keywords": [
     "shortcuts",

@@ -300,3 +300,62 @@ Integration:
 - Ready for use in TUI package
 - Ready for use in Web package
 - No external dependencies beyond core database adapter interface
+
+#### 2026-01-27: PHASE1-DB-002 - PostgreSQL Database Adapter
+ Implemented PostgreSQL database adapter for web app with user account support
+- Created enhanced PostgreSQL Prisma schema (schema.postgres.prisma) with 7 tables
+- Added User table with email, tier (free/pro/enterprise), apiTokenHash fields
+- Added UserShortcut table with all Shortcut fields plus userId foreign key
+- Added Collection table for user-created shortcut collections
+- Added CollectionShortcut junction table for many-to-many relationship
+- Added SyncLog table for audit trail of sync operations
+- All tables include proper timestamps (createdAt, updatedAt)
+- Foreign keys use ON DELETE CASCADE for proper data cleanup
+- Implemented PostgresAdapter class that implements DatabaseAdapter interface
+- Dual database support: separate connections for core and user data
+- Search queries transparently query both core shortcuts and user shortcuts
+- User-specific operations (add, update, delete) only affect user database
+- Comprehensive type conversion between Prisma models and Shortcut types
+- SourceType enum properly converted to/from string values
+- Generated Prisma client for PostgreSQL (prisma-postgres)
+- Exported PostgresAdapter from @katasumi/core package
+- Created verification script (verify-db-002.ts) that validates all acceptance criteria
+
+Database schema includes:
+- shortcuts (core app shortcuts)
+- app_info (application metadata)
+- users (user accounts with tier and API token)
+- user_shortcuts (user-created shortcuts with userId FK)
+- collections (user collections with privacy settings)
+- collection_shortcuts (junction table with custom ordering)
+- sync_logs (audit trail with operation type and status)
+
+Indexes created for performance:
+- users: email, tier
+- user_shortcuts: userId, app, action, category
+- collections: userId, isPublic
+- collection_shortcuts: collectionId, shortcutId (composite unique)
+- sync_logs: userId, createdAt
+
+Files created:
+- packages/core/prisma/schema.postgres.prisma (PostgreSQL schema with user tables)
+- packages/core/src/postgres-adapter.ts (PostgresAdapter implementation)
+- packages/core/src/verify-db-002.ts (verification script)
+
+Files modified:
+- packages/core/src/index.ts (added PostgresAdapter export)
+- packages/core/package.json (updated build script for postgres client, added verify-db-002)
+
+Verification:
+- ✅ PostgresAdapter implements DatabaseAdapter interface (compile-time verified)
+-  PostgresAdapter can be instantiated with database URL
+- ✅ All 7 required tables exist in PostgreSQL schema
+- ✅ Users table has email, tier, apiTokenHash fields
+- ✅ UserShortcut has all Shortcut fields plus userId FK
+- ✅ Collections table supports organization and privacy settings
+- ✅ CollectionShortcut junction table with composite unique constraint
+- ✅ SyncLog table tracks operations with status
+- ✅ 17 indexes created for query performance
+- ✅ 5 CASCADE constraints for data integrity
+- ✅ All TypeScript code compiles without errors
+- ✅ Full build passes for all packages (core, tui, web)
