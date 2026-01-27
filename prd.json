@@ -650,7 +650,13 @@
         "Keyboard shortcuts work: Tab (toggle mode), Cmd+K (change app), Cmd+F (focus filters)",
         "Click navigation works on all elements",
         "Responsive design works on mobile (filters stack vertically)",
-        "Loading state shown during async operations"
+        "Loading state shown during async operations",
+        "API errors display user-friendly error messages in UI (e.g., 'Failed to load apps. Please try again.')",
+        "Database connection errors show specific message: 'Database connection failed. Please check server status.'",
+        "Network errors show: 'Network error. Please check your connection and try again.'",
+        "Search errors display without crashing the app, allowing user to retry",
+        "Error messages include a 'Retry' button that re-attempts the failed operation",
+        "Errors are logged to console with full details for debugging"
       ],
       "stepsToVerify": [
         "Open web app and verify app selector shown",
@@ -662,10 +668,15 @@
         "Press Cmd+K and verify app selector reopens",
         "Resize to mobile width and verify filters stack vertically",
         "Initiate search and verify loading spinner appears",
+        "Simulate API failure (disconnect database or break endpoint) and verify error message displays",
+        "Click 'Retry' button on error message and verify operation re-attempts",
+        "Check browser console and verify detailed error logged",
+        "Simulate network failure and verify 'Network error' message appears",
+        "Verify app doesn't crash on error and user can navigate to other sections",
         "Run 'npm run test --workspace=@katasumi/web' to execute App-First mode UI tests",
         "Run 'npm test' from root to execute all package tests"
       ],
-      "passes": true,
+      "passes": false,
       "priority": 1,
       "priorityRationale": "Web search is critical missing functionality - UI scaffold exists but KeywordSearchEngine integration needed. SearchBar has TODO placeholder, must wire up database adapter and search engine to make web app functional.",
       "completedAt": "2026-01-27T21:55:11.186447Z",
@@ -682,7 +693,7 @@
         "Created comprehensive tests in app-first-search.test.ts covering search API, filtering, and error handling",
         "All tests pass (10 tests in web package, 115 total across all packages)",
         "TypeScript compilation successful with no errors",
-        "Build successful across all packages"
+        "Build successful across all packages",
       ]
     },
     {
@@ -986,21 +997,27 @@
     {
       "id": "PHASE2-TUI-011",
       "category": "Phase 2: TUI - Error Handling & Empty States",
-      "description": "Implement comprehensive error handling and helpful empty states throughout TUI",
+      "description": "Implement comprehensive error handling and helpful empty states throughout TUI with proper database error bubbling",
       "acceptanceCriteria": [
+        "Database connection errors bubble up to client with clear error messages",
+        "SQLite adapter validates core database file exists before initialization",
+        "PostgreSQL adapter validates connection URL is provided",
+        "All database operations wrapped in try-catch with informative error messages",
         "No apps found: Shows message 'No apps match your search. Try a different query.'",
         "No shortcuts found: Shows 'No shortcuts found. Try adjusting filters or search query.'",
-        "Database error: Shows 'Database error. Please try again.'",
+        "Database error: Shows 'Database error: [specific message]' instead of generic error",
         "Network error (sync): Shows 'Network error. Check connection and try again.'",
         "AI error: Falls back to keyword search with message 'AI unavailable, using keyword search'",
         "API rate limit: Shows 'Rate limit reached. Upgrade to Premium for unlimited AI searches.'",
-        "All errors logged to ~/.katasumi/error.log",
-        "Error messages user-friendly (no stack traces shown to user)"
+        "All errors logged to ~/.katasumi/error.log with timestamps",
+        "Error messages user-friendly (no stack traces shown to user, only in logs)"
       ],
       "stepsToVerify": [
+        "Run TUI without core database and verify error: 'Core database not found at path: ...'",
+        "Create PostgreSQL adapter with empty URL and verify error: 'Core database URL is required'",
+        "Corrupt database file and verify graceful error message with specifics",
         "Search for nonexistent app 'asdfqwer' and verify empty state message",
         "Select app and filter to impossible combination, verify no results message",
-        "Corrupt database file and verify graceful error message",
         "Disconnect network and attempt sync, verify network error message",
         "Configure invalid AI API key and search, verify fallback to keyword",
         "As free user, exceed 5 AI queries and verify rate limit message",
@@ -1010,8 +1027,9 @@
         "Run 'npm test' from root to execute all package tests"
       ],
       "passes": false,
-      "priority": 4,
-      "priorityRationale": "Error handling polish after features work"
+      "priority": 1,
+      "priorityRationale": "Database error handling is critical for production reliability. Without proper error bubbling, issues are hidden and debugging is impossible. Just improved SQLiteAdapter and PostgresAdapter to validate connections and wrap all operations in try-catch with clear messages.",
+      "implementationNotes": "Implemented 2026-01-27:\n- SQLiteAdapter: Added file existence validation, wrapped constructor in try-catch, all methods check initialization and wrap queries\n- PostgresAdapter: Added URL validation, wrapped constructor and all methods in try-catch\n- Both adapters now throw descriptive errors: 'Failed to connect to core database', 'Failed to search shortcuts', etc.\n- Errors include original error messages for debugging while keeping user-facing messages clear"
     },
     {
       "id": "PHASE2-TUI-012",

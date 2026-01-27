@@ -23,14 +23,23 @@ export class SQLiteAdapter implements DatabaseAdapter {
   constructor(coreDatabasePath: string, userDatabasePath?: string) {
     this.corePath = coreDatabasePath;
     
+    // Validate core database exists (unless it's in-memory)
+    if (coreDatabasePath !== ':memory:' && !fs.existsSync(coreDatabasePath)) {
+      throw new Error(`Core database not found at path: ${coreDatabasePath}. Please run 'npm run build-db' to create it.`);
+    }
+    
     // Default user database location: ~/.katasumi/user-data.db
     if (!userDatabasePath) {
       const homeDir = os.homedir();
       const katsumiDir = path.join(homeDir, '.katasumi');
       
       // Create directory if it doesn't exist
-      if (!fs.existsSync(katsumiDir)) {
-        fs.mkdirSync(katsumiDir, { recursive: true });
+      try {
+        if (!fs.existsSync(katsumiDir)) {
+          fs.mkdirSync(katsumiDir, { recursive: true });
+        }
+      } catch (error) {
+        throw new Error(`Failed to create user data directory at ${katsumiDir}: ${error instanceof Error ? error.message : String(error)}`);
       }
       
       this.userPath = path.join(katsumiDir, 'user-data.db');
@@ -39,16 +48,24 @@ export class SQLiteAdapter implements DatabaseAdapter {
     }
 
     // Initialize core database (read-only)
-    const coreAdapter = new PrismaLibSql({
-      url: `file:${this.corePath}`
-    });
-    this.coreDb = new PrismaClient({ adapter: coreAdapter });
+    try {
+      const coreAdapter = new PrismaLibSql({
+        url: `file:${this.corePath}`
+      });
+      this.coreDb = new PrismaClient({ adapter: coreAdapter });
+    } catch (error) {
+      throw new Error(`Failed to connect to core database: ${error instanceof Error ? error.message : String(error)}`);
+    }
 
     // Initialize user database (read-write)
-    const userAdapter = new PrismaLibSql({
-      url: `file:${this.userPath}`
-    });
-    this.userDb = new PrismaClient({ adapter: userAdapter });
+    try {
+      const userAdapter = new PrismaLibSql({
+        url: `file:${this.userPath}`
+      });
+      this.userDb = new PrismaClient({ adapter: userAdapter });
+    } catch (error) {
+      throw new Error(`Failed to connect to user database: ${error instanceof Error ? error.message : String(error)}`);
+    }
 
     // Initialize user database schema if it doesn't exist
     this.initialized = this.initializeUserDatabase();
@@ -69,8 +86,9 @@ export class SQLiteAdapter implements DatabaseAdapter {
       // Table doesn't exist, create schema
       console.log('Initializing user database schema...');
       
-      // Create shortcuts table
-      await this.userDb.$executeRawUnsafe(`
+      try {
+        // Create shortcuts table
+        await this.userDb.$executeRawUnsafe(`
         CREATE TABLE IF NOT EXISTS shortcuts (
           id TEXT PRIMARY KEY,
           app TEXT NOT NULL,
@@ -124,7 +142,10 @@ export class SQLiteAdapter implements DatabaseAdapter {
         CREATE INDEX IF NOT EXISTS idx_app_info_category ON app_info(category)
       `);
 
-      console.log('✅ User database schema initialized');
+        console.log('✅ User database schema initialized');
+      } catch (schemaError) {
+        throw new Error(`Failed to initialize user database schema: ${schemaError instanceof Error ? schemaError.message : String(schemaError)}`);
+      }
     }
   }
 
@@ -323,20 +344,32 @@ export class SQLiteAdapter implements DatabaseAdapter {
   }
 
   async getApps(): Promise<AppInfo[]> {
-    await this.ensureInitialized();
-    // Get apps from both databases
-    const [coreApps, userApps] = await Promise.all([
-      this.coreDb.appInfo.findMany(),
-      this.userDb.appInfo.findMany(),
-    ]);
+    try {
+      await this.ensureInitialized();
+    } catch (error) {
+      throw new Error(`Database initialization failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
 
-    // Merge apps by name, preferring user database if duplicate
-    const appsMap = new Map<string, any>();
-    
-    coreApps.forEach(app => appsMap.set(app.name, app));
-    userApps.forEach(app => appsMap.set(app.name, app));
+    try {
+      // Get apps from both databases
+      const [coreApps, userApps] = await Promise.all([
+        this.coreDb.appInfo.findMany(),
+        this.userDb.appInfo.findMany(),
+      ]);
 
-    return Array.from(appsMap.values()).map(record => this.dbToAppInfo(record));
+      // Merge apps by name, preferring user database if duplicate
+      const appsMap = new Map<string, any>();
+      
+      coreApps.forEach(app => appsMap.set(app.name, app));
+      userApps.forEach(app => appsMap.set(app.name, app));
+
+      return Array.from(appsMap.values()).map(record => this.dbToAppInfo(record));
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('initialization failed')) {
+        throw error;
+      }
+      throw new Error(`Failed to retrieve apps: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
 
   async getAppInfo(app: string): Promise<AppInfo | null> {

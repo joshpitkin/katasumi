@@ -19,15 +19,27 @@ export class PostgresAdapter implements DatabaseAdapter {
    * @param userId - Optional user ID for user-specific operations
    */
   constructor(coreDbUrl: string, userDbUrl?: string, userId?: string) {
+    if (!coreDbUrl || coreDbUrl.trim() === '') {
+      throw new Error('Core database URL is required');
+    }
+    
     // Set environment variable for Prisma to pick up
     process.env.DATABASE_URL = coreDbUrl;
     
-    this.coreClient = new PrismaClientPostgres();
+    try {
+      this.coreClient = new PrismaClientPostgres();
+    } catch (error) {
+      throw new Error(`Failed to connect to core PostgreSQL database: ${error instanceof Error ? error.message : String(error)}`);
+    }
     
     // If userDbUrl not provided, use the same connection
     if (userDbUrl) {
       process.env.DATABASE_URL = userDbUrl;
-      this.userClient = new PrismaClientPostgres();
+      try {
+        this.userClient = new PrismaClientPostgres();
+      } catch (error) {
+        throw new Error(`Failed to connect to user PostgreSQL database: ${error instanceof Error ? error.message : String(error)}`);
+      }
       process.env.DATABASE_URL = coreDbUrl; // Reset
     } else {
       this.userClient = this.coreClient;
@@ -42,8 +54,9 @@ export class PostgresAdapter implements DatabaseAdapter {
   async searchShortcuts(options: SearchOptions): Promise<Shortcut[]> {
     const { query, app, category, tag, limit = 50, offset = 0 } = options;
 
-    // Build where clause
-    const where: any = {};
+    try {
+      // Build where clause
+      const where: any = {};
     if (app) where.app = app;
     if (category) where.category = category;
     if (query) {
@@ -80,6 +93,9 @@ export class PostgresAdapter implements DatabaseAdapter {
     ];
 
     return results.slice(0, limit);
+    } catch (error) {
+      throw new Error(`Failed to search PostgreSQL shortcuts: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
 
   /**
@@ -206,18 +222,22 @@ export class PostgresAdapter implements DatabaseAdapter {
    * Get all available apps
    */
   async getApps(): Promise<AppInfo[]> {
-    const apps = await this.coreClient.appInfo.findMany({
-      orderBy: { displayName: 'asc' },
-    });
+    try {
+      const apps = await this.coreClient.appInfo.findMany({
+        orderBy: { displayName: 'asc' },
+      });
 
-    return apps.map(app => ({
-      id: app.id,
-      name: app.name,
-      displayName: app.displayName,
-      category: app.category,
-      platforms: app.platforms.split(',') as ('mac' | 'windows' | 'linux')[],
-      shortcutCount: app.shortcutCount,
-    }));
+      return apps.map(app => ({
+        id: app.id,
+        name: app.name,
+        displayName: app.displayName,
+        category: app.category,
+        platforms: app.platforms.split(',') as ('mac' | 'windows' | 'linux')[],
+        shortcutCount: app.shortcutCount,
+      }));
+    } catch (error) {
+      throw new Error(`Failed to retrieve apps from PostgreSQL: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
 
   /**
