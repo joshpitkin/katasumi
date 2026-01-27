@@ -2,20 +2,33 @@
   "name": "@katasumi/web",
   "version": "1.0.0",
   "description": "Web interface for Katasumi keyboard shortcut search",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc --build",
-    "dev": "tsc --build --watch"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "verify": "node verify-phase3-web-001.mjs"
   },
   "keywords": ["shortcuts", "keyboard", "productivity", "web"],
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@katasumi/core": "file:../core"
+    "@katasumi/core": "file:../core",
+    "next": "^14.2.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "zustand": "^4.5.7",
+    "next-themes": "^0.3.0"
   },
   "devDependencies": {
     "@types/node": "^20.10.6",
-    "typescript": "^5.3.3"
+    "@types/react": "^18.3.27",
+    "@types/react-dom": "^18.3.5",
+    "typescript": "^5.3.3",
+    "tailwindcss": "^3.4.1",
+    "postcss": "^8.4.33",
+    "autoprefixer": "^10.4.16",
+    "eslint": "^8.56.0",
+    "eslint-config-next": "^14.2.3"
   }
 }

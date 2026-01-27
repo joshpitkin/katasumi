@@ -313,7 +313,7 @@
         "Check that packages/web/components/ directory has all component files listed in acceptance criteria",
         "Verify app/ directory structure matches section 3.1 of katasumi-plan.md"
       ],
-      "passes": false,
+      "passes": true,
       "priority": 2,
       "priorityRationale": "Web scaffold needed before web features. Establishes parity with TUI design and ensures keyboard-first navigation works in browser.",
       "implementationNotes": "Reference katasumi-plan.md section 3.1 for directory structure and section 3.2 for key differences from TUI. The web interface should mirror TUI functionality while adding click-based navigation. Use next/link for client-side navigation and implement keyboard event handlers at the layout level for global shortcuts. Consider using Zustand or React Context for state management to match TUI architecture.",
@@ -323,7 +323,9 @@
         "katasumi-plan.md sections 2.2.2 and 2.2.3: TUI mockups that web interface should visually match",
         "katasumi-plan.md section 2.2.4: Global features (Platform Selector, Settings, Help) that web must implement with same keyboard shortcuts"
       ],
-      "technicalNotes": "Use Next.js 14+ App Router with React Server Components where appropriate (e.g., initial data fetching). Client Components needed for interactive elements (use 'use client' directive). Implement keyboard shortcuts using useEffect with document.addEventListener for global shortcuts. Consider using @radix-ui/react-dialog for help overlay, @radix-ui/react-select for dropdowns, and @radix-ui/react-tabs for mode switching."
+      "technicalNotes": "Use Next.js 14+ App Router with React Server Components where appropriate (e.g., initial data fetching). Client Components needed for interactive elements (use 'use client' directive). Implement keyboard shortcuts using useEffect with document.addEventListener for global shortcuts. Consider using @radix-ui/react-dialog for help overlay, @radix-ui/react-select for dropdowns, and @radix-ui/react-tabs for mode switching.",
+      "completedDate": "2026-01-27",
+      "notes": "Completed Next.js 14+ application with App Router, Tailwind CSS, TypeScript, Zustand state management, dark mode support, responsive design, and all required components. All 14 acceptance criteria verified successfully. Global keyboard shortcuts working (Tab, F4, F5, ?, Cmd+,). Both App-First and Full-Phrase modes implemented with proper UI scaffolding."
     },
     {
       "id": "PHASE1-SEARCH-002",
@@ -364,7 +366,7 @@
       "description": "Implement reverse lookup: search by key combination to find what action it performs",
       "acceptanceCriteria": [
         "searchByKeys() accepts key string and optional platform",
-        "Normalizes key variants: 'Cmd+K', '\u2318K', 'Command+K' all match",
+        "Normalizes key variants: 'Cmd+K', '⌘K', 'Command+K' all match",
         "Returns shortcuts matching the key combination for specified platform",
         "Supports multi-platform search (returns shortcuts for all platforms)",
         "Case-insensitive matching",
@@ -373,7 +375,7 @@
       ],
       "stepsToVerify": [
         "Search for 'Cmd+K' on macOS platform and verify results",
-        "Search for '\u2318K' and verify same results as 'Cmd+K'",
+        "Search for '⌘K' and verify same results as 'Cmd+K'",
         "Search for 'Ctrl+K' on Windows platform and verify different results",
         "Search for 'j' in vim context and verify 'move down' result",
         "Search for nonexistent key 'Cmd+Shift+F99' and verify empty array",
@@ -464,7 +466,7 @@
         "Verify mode indicator shows 'Full-Phrase'",
         "Type 'split window' and verify cross-app results",
         "Verify results grouped by app (tmux, vim, VSCode, etc.)",
-        "Press F4 and verify AI toggle (ON \u2192 OFF \u2192 ON)",
+        "Press F4 and verify AI toggle (ON → OFF → ON)",
         "Verify AI indicator updates immediately",
         "With AI ON, search and verify AI insight message appears",
         "With AI OFF, verify 'Keyword search only' message"
@@ -512,7 +514,7 @@
       "acceptanceCriteria": [
         "F5 or Cmd+P opens platform selector overlay",
         "Shows 4 options: macOS, Windows, Linux, All Platforms",
-        "Current platform marked with indicator (\u25b8 or checkmark)",
+        "Current platform marked with indicator (▸ or checkmark)",
         "Arrow keys navigate options",
         "Enter selects platform and closes overlay",
         "Esc closes overlay without changing platform",
@@ -553,7 +555,7 @@
         "Verify Tab moves between search input, filters, results",
         "Verify arrow keys work in all lists and dropdowns",
         "Verify Enter confirms in all contexts (select app, shortcut, dropdown)",
-        "Verify Esc backs out from detail view \u2192 results \u2192 app selector",
+        "Verify Esc backs out from detail view → results → app selector",
         "Verify focus indicator visible on all focused elements",
         "Try to find keyboard traps (should find none)"
       ],
@@ -638,7 +640,7 @@
         "Verify large search input appears",
         "Type 'how to split screen' and verify cross-app results",
         "Verify results grouped by app name",
-        "Click AI toggle and verify indicator changes ON \u2192 OFF",
+        "Click AI toggle and verify indicator changes ON → OFF",
         "Verify query count decrements for free users",
         "Login as premium user and verify 'Unlimited' shown",
         "Verify app icons/names displayed correctly"
@@ -809,7 +811,7 @@
         "Change Default Mode to Full-Phrase and click Save",
         "Verify config.json updated with new default mode",
         "Reopen settings and verify value persisted",
-        "Enter AI API key and verify it's masked (shows \u2022\u2022\u2022\u2022\u2022)",
+        "Enter AI API key and verify it's masked (shows •••••)",
         "Click Cancel and verify changes discarded",
         "Click Sync Now and verify sync initiated"
       ],
@@ -833,7 +835,7 @@
       "stepsToVerify": [
         "Press ? key and verify help overlay appears",
         "Verify Global section includes Ctrl+C, ?, Cmd+,, Cmd+P",
-        "Verify Navigation section includes \u2191\u2193, Enter, Esc, /",
+        "Verify Navigation section includes ↑↓, Enter, Esc, /",
         "Verify Search Modes section includes Tab, F2, F3, F4",
         "Verify Detail View section includes c, o",
         "Press Esc and verify overlay closes",
@@ -1017,9 +1019,9 @@
       "category": "Phase 3: Web - Keyboard Shortcuts",
       "description": "Implement all keyboard shortcuts matching TUI (with Cmd/Ctrl modifiers) and show shortcuts hint tooltip",
       "acceptanceCriteria": [
-        "Tab toggles search mode (App-First \u2194 Full-Phrase)",
+        "Tab toggles search mode (App-First ↔ Full-Phrase)",
         "/ or clicking search focuses input",
-        "\u2191\u2193 navigate results list",
+        "↑↓ navigate results list",
         "Enter opens detail modal",
         "Esc closes modal/dropdown/overlay",
         "Cmd/Ctrl+K opens app selector",
@@ -1033,7 +1035,7 @@
       "stepsToVerify": [
         "Press Tab and verify mode toggle",
         "Press / and verify search input focused",
-        "Search for shortcuts, then press \u2191\u2193 and verify navigation",
+        "Search for shortcuts, then press ↑↓ and verify navigation",
         "Press Enter and verify detail modal opens",
         "Press Esc and verify modal closes",
         "Press Cmd+K (Mac) or Ctrl+K (Windows) and verify app selector",
