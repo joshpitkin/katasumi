@@ -157,3 +157,45 @@ Verification:
 - ✅ Platform-specific keys correctly assigned (mac/windows/linux)
 - ✅ Database seeds successfully with no errors
 - ✅ Batch insertion improves performance for large datasets
+
+#### 2026-01-27: PHASE1-DATA-001 - Core Shortcuts Database
+ Created curated shortcuts database with 770 shortcuts across 8 popular applications
+- Created comprehensive seed data file with 976 lines covering all required applications
+- vim: 125 shortcuts (exceeds minimum of 100) covering Normal, Visual, and Insert modes
+- tmux: 62 shortcuts (exceeds minimum of 50) for session, window, and pane management
+- VSCode: 223 shortcuts (exceeds minimum of 200) for editing, debugging, navigation, and git
+- git: 45 shortcuts (exceeds minimum of 40) for common CLI commands and workflows
+- bash: 35 shortcuts (exceeds minimum of 30) for shell navigation and editing
+- macOS: 110 shortcuts (exceeds minimum of 100) for system-wide operations
+- Windows: 115 shortcuts (exceeds minimum of 100) for OS-level shortcuts
+- GNOME: 55 shortcuts (exceeds minimum of 50) for desktop environment controls
+- Each shortcut includes proper category, tags, and platform-specific key variants
+- All shortcuts link to official documentation source URLs with confidence scores
+- Platform-specific shortcuts correctly include only relevant OS keys (e.g., macOS only has mac keys)
+- Created seed script that populates database in batches for performance
+- Created verification script that validates all acceptance criteria
+- Successfully seeded database: 8 apps, 770 shortcuts inserted
+- Search functionality verified: 'copy' returns results from 6 different apps
+
+Files created/modified:
+- packages/core/src/seed-data.ts (comprehensive shortcuts data for all 8 apps)
+- packages/core/src/seed.ts (updated with better error handling and emoji indicators)
+- packages/core/src/verify-seed.ts (verification script for acceptance criteria)
+- packages/core/package.json (added verify script)
+
+Verification results:
+- ✅ vim shortcuts: 125 (required >= 100)
+- ✅ tmux pane management shortcuts: 27
+- ✅ VSCode shortcuts: 223 (required >= 200)
+- ✅ All shortcuts have source URLs: 770/770
+- ✅ macOS shortcuts are platform-specific (mac keys only)
+- ✅ 'copy' search returns results from 6 apps: vim, tmux, vscode, macos, windows, gnome
+- ✅ All apps have appropriate categories (Text Editor, Terminal Multiplexer, Code Editor, etc.)
+- ✅ All minimum count requirements met for all 8 applications
+
+Database schema supports:
+- Platform-specific keys (keysMac, keysWindows, keysLinux)
+- Optional context field for mode-specific shortcuts
+- Category and tags for organization and search
+- Source metadata (type, URL, scrapeDate, confidence)
+- Proper indexing on app, action, and category fields

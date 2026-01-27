@@ -11,7 +11,8 @@
     "migrate": "node dist/migrate.js",
     "migrate:rollback": "node dist/migrate.js rollback",
     "migrate:status": "node dist/migrate.js status",
-    "seed": "node dist/seed.js"
+    "seed": "node dist/seed.js",
+    "verify": "node dist/verify-seed.js"
   },
   "keywords": [
     "shortcuts",
