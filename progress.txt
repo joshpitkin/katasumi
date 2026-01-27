@@ -112,3 +112,48 @@ Verification:
 - ✅ Schema matches between SQLite and PostgreSQL definitions
 - ✅ Migrations can be run from root: npm run migrate
 - ✅ All TypeScript code compiles without errors
+
+#### 2026-01-27: PHASE1-DATA-001 - Core Shortcuts Database
+✅ Created curated shortcuts database with 770+ shortcuts across 8 popular applications
+- Implemented comprehensive seed data file (seed-data.ts) with 770 total shortcuts
+- Created database seeding script (seed.ts) with batch insertion for performance
+- All shortcuts include proper context, category, tags, and official documentation URLs
+
+Apps and shortcuts included:
+- Vim: 125 shortcuts across Normal Mode, Insert Mode, Visual Mode, Command Mode
+- tmux: 62 shortcuts for pane management, window management, session control
+- Visual Studio Code: 223 shortcuts covering editing, debugging, git integration, navigation
+- Git CLI: 45 common commands for version control workflows
+- Bash/Shell: 35 shell shortcuts and command-line navigation
+- macOS: 110 system shortcuts including Finder, window management, spotlight, Safari
+- Windows: 115 system shortcuts including File Explorer, window snapping, taskbar, screenshots
+- GNOME: 55 desktop environment shortcuts for workspaces, window management, screenshots
+
+Data quality:
+- Each shortcut has proper context field (e.g., "Normal Mode", "Insert Mode", "Files")
+- Category groupings for organization (e.g., "Navigation", "Editing", "Window Management")
+- Comprehensive tags for searchability (e.g., ['copy', 'clipboard'], ['window', 'maximize'])
+- Platform-specific key variants (keysMac, keysWindows, keysLinux) where applicable
+- All shortcuts link to official documentation source URLs with confidence scores
+- Source metadata includes type ('official'), URL, scraped timestamp, and confidence (1.0)
+
+Files created:
+- packages/core/src/seed-data.ts (770 shortcuts across 8 apps)
+- packages/core/src/seed.ts (database seeding script)
+- Updated packages/core/package.json (added seed script)
+- Updated packages/core/.env (configured DATABASE_URL)
+
+Verification:
+- ✅ Vim shortcuts count: 125 (exceeds requirement of >100)
+- ✅ tmux shortcuts count: 62 (exceeds requirement of >50)
+- ✅ VSCode shortcuts count: 223 (exceeds requirement of >200)
+- ✅ Git shortcuts count: 45 (exceeds requirement of >40)
+- ✅ Bash shortcuts count: 35 (exceeds requirement of >30)
+- ✅ macOS shortcuts count: 110 (exceeds requirement of >100)
+- ✅ Windows shortcuts count: 115 (exceeds requirement of >100)
+- ✅ GNOME shortcuts count: 55 (exceeds requirement of >50)
+- ✅ All 770 shortcuts have non-empty source URLs
+- ✅ Shortcuts have proper context, category, and tags
+- ✅ Platform-specific keys correctly assigned (mac/windows/linux)
+- ✅ Database seeds successfully with no errors
+- ✅ Batch insertion improves performance for large datasets

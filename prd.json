@@ -113,7 +113,7 @@
         "Search for 'copy' and verify results from multiple apps",
         "Verify each app has appropriate category (Editor, Terminal, OS, etc.)"
       ],
-      "passes": false,
+      "passes": true,
       "priority": 2,
       "priorityRationale": "Core shortcuts data needed to test search functionality"
     },
