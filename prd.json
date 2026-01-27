@@ -1,7 +1,7 @@
 {
   "project": "Katasumi",
   "version": "1.0.0",
-  "lastUpdated": "2026-01-27T17:28:34.501419Z",
+  "lastUpdated": "2026-01-27T21:48:50.001Z",
   "requirements": [
     {
       "id": "PHASE1-DB-003",
@@ -369,7 +369,7 @@
       "description": "Implement reverse lookup: search by key combination to find what action it performs",
       "acceptanceCriteria": [
         "searchByKeys() accepts key string and optional platform",
-        "Normalizes key variants: 'Cmd+K', '\u2318K', 'Command+K' all match",
+        "Normalizes key variants: 'Cmd+K', '⌘K', 'Command+K' all match",
         "Returns shortcuts matching the key combination for specified platform",
         "Supports multi-platform search (returns shortcuts for all platforms)",
         "Case-insensitive matching",
@@ -378,7 +378,7 @@
       ],
       "stepsToVerify": [
         "Search for 'Cmd+K' on macOS platform and verify results",
-        "Search for '\u2318K' and verify same results as 'Cmd+K'",
+        "Search for '⌘K' and verify same results as 'Cmd+K'",
         "Search for 'Ctrl+K' on Windows platform and verify different results",
         "Search for 'j' in vim context and verify 'move down' result",
         "Search for nonexistent key 'Cmd+Shift+F99' and verify empty array",
@@ -452,10 +452,10 @@
         "Run 'npm run test --workspace=@katasumi/tui' to execute App-First mode tests",
         "Run 'npm test' from root to execute all package tests"
       ],
-      "passes": false,
+      "passes": true,
       "priority": 1,
       "priorityRationale": "TUI App-First mode has bug: ES module __dirname not defined causing database path resolution to fail. Fixed by adding fileURLToPath/dirname shim. After rebuild, should be fully functional.",
-      "implementationNotes": "Bug fix applied 2026-01-27: Added ES module dirname shim (fileURLToPath/dirname) to AppFirstMode.tsx to resolve database path correctly when running from dist/ directory. Without this, __dirname was undefined causing 'No apps found' error."
+      "implementationNotes": "Completed 2026-01-27: Added comprehensive test suite for App-First mode including database path resolution tests (from dist/ directory), app loading, filtering, shortcuts loading, and performance tests. All acceptance criteria verified including path resolution fix, app loading, filtering, and <100ms query performance. Tests added to packages/tui/src/__tests__/app-first-mode.test.ts with vitest configuration."
     },
     {
       "id": "PHASE2-TUI-003",
@@ -478,7 +478,7 @@
         "Verify mode indicator shows 'Full-Phrase'",
         "Type 'split window' and verify cross-app results",
         "Verify results grouped by app (tmux, vim, VSCode, etc.)",
-        "Press F4 and verify AI toggle (ON \u2192 OFF \u2192 ON)",
+        "Press F4 and verify AI toggle (ON → OFF → ON)",
         "Verify AI indicator updates immediately",
         "With AI ON, search and verify AI insight message appears",
         "With AI OFF, verify 'Keyword search only' message",
@@ -530,7 +530,7 @@
       "acceptanceCriteria": [
         "F5 or Cmd+P opens platform selector overlay",
         "Shows 4 options: macOS, Windows, Linux, All Platforms",
-        "Current platform marked with indicator (\u25b8 or checkmark)",
+        "Current platform marked with indicator (▸ or checkmark)",
         "Arrow keys navigate options",
         "Enter selects platform and closes overlay",
         "Esc closes overlay without changing platform",
@@ -573,7 +573,7 @@
         "Verify Tab moves between search input, filters, results",
         "Verify arrow keys work in all lists and dropdowns",
         "Verify Enter confirms in all contexts (select app, shortcut, dropdown)",
-        "Verify Esc backs out from detail view \u2192 results \u2192 app selector",
+        "Verify Esc backs out from detail view → results → app selector",
         "Verify focus indicator visible on all focused elements",
         "Try to find keyboard traps (should find none)",
         "Run 'npm run test --workspace=@katasumi/tui' to execute keyboard navigation tests",
@@ -664,7 +664,7 @@
         "Verify large search input appears",
         "Type 'how to split screen' and verify cross-app results",
         "Verify results grouped by app name",
-        "Click AI toggle and verify indicator changes ON \u2192 OFF",
+        "Click AI toggle and verify indicator changes ON → OFF",
         "Verify query count decrements for free users",
         "Login as premium user and verify 'Unlimited' shown",
         "Verify app icons/names displayed correctly",
@@ -846,7 +846,7 @@
         "Change Default Mode to Full-Phrase and click Save",
         "Verify config.json updated with new default mode",
         "Reopen settings and verify value persisted",
-        "Enter AI API key and verify it's masked (shows \u2022\u2022\u2022\u2022\u2022)",
+        "Enter AI API key and verify it's masked (shows •••••)",
         "Click Cancel and verify changes discarded",
         "Click Sync Now and verify sync initiated"
       ],
@@ -870,7 +870,7 @@
       "stepsToVerify": [
         "Press ? key and verify help overlay appears",
         "Verify Global section includes Ctrl+C, ?, Cmd+,, Cmd+P",
-        "Verify Navigation section includes \u2191\u2193, Enter, Esc, /",
+        "Verify Navigation section includes ↑↓, Enter, Esc, /",
         "Verify Search Modes section includes Tab, F2, F3, F4",
         "Verify Detail View section includes c, o",
         "Press Esc and verify overlay closes",
@@ -1068,9 +1068,9 @@
       "category": "Phase 3: Web - Keyboard Shortcuts",
       "description": "Implement all keyboard shortcuts matching TUI (with Cmd/Ctrl modifiers) and show shortcuts hint tooltip",
       "acceptanceCriteria": [
-        "Tab toggles search mode (App-First \u2194 Full-Phrase)",
+        "Tab toggles search mode (App-First ↔ Full-Phrase)",
         "/ or clicking search focuses input",
-        "\u2191\u2193 navigate results list",
+        "↑↓ navigate results list",
         "Enter opens detail modal",
         "Esc closes modal/dropdown/overlay",
         "Cmd/Ctrl+K opens app selector",
@@ -1084,7 +1084,7 @@
       "stepsToVerify": [
         "Press Tab and verify mode toggle",
         "Press / and verify search input focused",
-        "Search for shortcuts, then press \u2191\u2193 and verify navigation",
+        "Search for shortcuts, then press ↑↓ and verify navigation",
         "Press Enter and verify detail modal opens",
         "Press Esc and verify modal closes",
         "Press Cmd+K (Mac) or Ctrl+K (Windows) and verify app selector",

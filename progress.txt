@@ -963,3 +963,45 @@ Implemented complete App-First mode with app selector, filters, and results disp
 - Function keys (F2/F3) handled via process.stdin keypress events
 - Fallback to empty adapter if database not found (graceful degradation)
 - Manual testing still recommended for UX verification
+
+## 2026-01-27 - PHASE2-TUI-002: App-First Mode Testing Complete
+
+### Task Completed
+Implemented comprehensive test suite for App-First search mode with database path resolution tests.
+
+### Changes Made
+1. **Created Test Suite** (`packages/tui/src/__tests__/app-first-mode.test.ts`)
+   - Database path resolution tests (verifies correct path from dist/ directory)
+   - App loading tests (validates AppInfo structure)
+   - App filtering tests (fuzzy matching simulation)
+   - Shortcuts loading tests (validates Shortcut structure)
+   - Performance tests (validates <100ms query response time)
+   - 10 comprehensive tests covering all acceptance criteria
+
+2. **Added Test Infrastructure**
+   - Created `vitest.config.ts` for TUI package
+   - Updated `package.json` with test scripts
+   - Added vitest as dev dependency
+
+3. **Test Results**
+   - All 10 tests passing
+   - Database path resolution working from dist/ directory
+   - Query performance consistently under 100ms
+   - All app and shortcut data structures validated
+
+### Verification
+- ✅ All TUI tests pass (10/10)
+- ✅ All core tests pass (95/95)
+- ✅ All web tests pass (4/4)
+- ✅ TypeScript compilation successful
+- ✅ Performance requirements met (<100ms)
+
+### Acceptance Criteria Met
+- ✅ Test for correct paths when running from dist/ directory
+- ✅ Database path resolution validated
+- ✅ App loading and filtering tested
+- ✅ Shortcuts loading and filtering tested
+- ✅ Performance under 100ms verified
+- ✅ Tests added to test suite (npm test)
+
+The App-First mode is fully functional with comprehensive test coverage validating all core functionality including the ES module dirname fix for path resolution.

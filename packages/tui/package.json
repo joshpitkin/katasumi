@@ -12,6 +12,8 @@
     "build": "tsc --build",
     "dev": "npm run build && node dist/cli.js",
     "start": "node dist/cli.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "test-adapter": "node dist/test-adapter.js",
     "verify": "node dist/verify-db-001.js",
     "verify-tui-001": "npm run build && node dist/verify-tui-001.js"
@@ -34,6 +36,7 @@
   "devDependencies": {
     "@types/node": "^20.10.6",
     "@types/react": "^18.3.27",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "vitest": "^4.0.18"
   }
 }
