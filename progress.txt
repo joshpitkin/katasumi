@@ -704,3 +704,72 @@ Next steps for web development:
    Documentation deployment to GitHub Pages (workflow configured, awaits repository setup)
 
 **Status:** Complete and ready for deployment
+
+================================================================================
+Date: 2026-01-27
+Task: PHASE1-SEARCH-002 - AI-powered semantic search
+Status: COMPLETED
+================================================================================
+
+Implemented AI-powered semantic search engine with support for multiple providers:
+
+FEATURES IMPLEMENTED:
+1. AISearchEngine class with support for 4 AI providers:
+   - OpenAI (gpt-4, gpt-4-turbo)
+   - Anthropic (claude-3-sonnet, claude-3-opus)
+   - OpenRouter (unified API for multiple models)
+   - Ollama (local LLM, no API key required)
+
+2. Core functionality:
+   - semanticSearch(): Natural language query understanding with AI re-ranking
+   - explainShortcut(): Plain English explanations of shortcuts
+   - Automatic fallback to keyword search on AI failures
+   - 5-second timeout (configurable) for AI requests
+   - Graceful error handling for network issues and invalid API keys
+
+3. Provider-specific features:
+   - OpenAI: Bearer token authentication
+   - Anthropic: x-api-key header with anthropic-version
+   - OpenRouter: Support for model selection (openai/gpt-4, anthropic/claude-3-sonnet, etc.)
+   - Ollama: No authentication required, configurable baseUrl
+
+4. Comprehensive test coverage:
+   - 19 test cases covering all providers
+   - Timeout handling tests
+   - Fallback mechanism tests
+   - Error handling for missing API keys
+   - Filter support (platform, app, category, context)
+   - 100% test pass rate
+
+FILES CREATED/MODIFIED:
+- Created: /workspace/packages/core/src/ai-search-engine.ts (400+ lines)
+- Created: /workspace/packages/core/src/__tests__/ai-search-engine.test.ts (550+ lines)
+- Modified: /workspace/packages/core/src/index.ts (added export)
+
+VERIFICATION:
+ All 80 tests pass (including 19 new AI search tests)
+ TypeScript compilation successful
+ Builds without errors
+ Exported from @katasumi/core package
+
+ACCEPTANCE CRITERIA MET:
+ AISearchEngine class accepts AIProviderConfig and DatabaseAdapter
+ Supports OpenAI (gpt-4, gpt-4-turbo) with API key
+ Supports Anthropic (claude-3-sonnet, claude-3-opus) with API key
+ Supports OpenRouter (unified API for multiple models) with API key
+ Supports Ollama (local, no API key required) with baseUrl
+ OpenRouter allows model selection from multiple providers
+ semanticSearch() extracts intent from natural language query
+ Results are re-ranked by AI-determined relevance
+ Falls back to keyword search if AI provider fails
+ AI requests timeout after 5 seconds (configurable)
+ explainShortcut() returns plain English description
+
+TECHNICAL NOTES:
+- AI responses are parsed from JSON format
+- Keyword search provides initial candidate set (top 50)
+- AI re-ranks candidates based on semantic understanding
+- All API calls use fetch() with AbortController for timeouts
+- TypeScript types ensure type safety across all providers
+- Mock fetch used in tests to avoid real API calls
+
