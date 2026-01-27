@@ -1059,3 +1059,59 @@ VERIFICATION:
  Keyboard shortcuts implemented
 
 STATUS: Complete ✓
+
+## 2026-01-27 - PHASE2-TUI-003: Full-Phrase Mode Implementation
+
+**Task:** Implement Full-Phrase search mode with natural language input and cross-app results display
+
+**Changes Made:**
+
+1. **FullPhraseMode Component** (`packages/tui/src/components/FullPhraseMode.tsx`)
+   - Completely rewrote component to implement functional search interface
+   - Added keyboard input handling for search query (no external dependencies needed)
+   - Integrated SQLiteAdapter and KeywordSearchEngine for real search functionality
+   - Implemented database path resolution (similar to AppFirstMode)
+   - Added 300ms debounce for search performance optimization
+   - Created result grouping by app name
+   - Display up to 3 shortcuts per app with "...and N more" indicator
+   - Results show: keys (platform-specific), action, context
+   - Platform filtering support (mac, windows, linux)
+   - AI indicator shows "AI Insight" when ON, "Keyword search only" when OFF
+
+2. **Test Suite** (`packages/tui/src/__tests__/full-phrase-mode.test.ts`)
+   - Created comprehensive test suite with 13 tests
+   - Cross-app search: searches across all apps, finds "split window", finds "undo"
+   - Platform filtering: tests mac, windows, linux platform filters
+   - Result grouping: verifies grouping by app works correctly
+   - Search performance: ensures <500ms search time, handles empty/non-matching queries
+   - Result structure: validates all required fields present
+   - AI toggle behavior: tests keyword search works regardless of AI state
+   - Fixed directory creation issue for test database
+
+**Acceptance Criteria Met:**
+ Tab key toggles between App-First and Full-Phrase modes (via GlobalKeybindings)
+ Mode indicator clearly shows current mode at top (Header component)
+ Full-Phrase mode shows single large search input
+ Results grouped by app name
+ Each result shows: app name, keys, action, context
+ F4 key toggles AI on/off (via GlobalKeybindings)
+ AI indicator shows ON/OFF state clearly
+ When AI is ON, shows 'AI Insight' message below results
+ When AI is OFF, shows 'Keyword search only' message
+ All tests pass (23 TUI tests total: 10 App-First + 13 Full-Phrase)
+
+**Test Results:**
+- TUI package: 23/23 tests passing
+- All packages: 115/115 tests passing (92 core + 10 web + 23 tui)
+- TypeScript compilation: successful
+- Build: successful
+
+**Technical Details:**
+- Used Ink's useInput hook for keyboard input instead of ink-text-input (v4 compatibility)
+- Reused database adapter singleton pattern from AppFirstMode
+- KeywordSearchEngine provides fuzzy search with ranking
+- Platform filtering filters shortcuts based on available key bindings
+- Debounce prevents excessive searches during typing
+- Results limited to 30 total shortcuts, 3 per app for clean display
+
+**Status:** ✅ COMPLETE - All acceptance criteria met, all tests passing
