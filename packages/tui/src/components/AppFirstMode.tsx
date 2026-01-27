@@ -8,6 +8,12 @@ import { FiltersBar } from './FiltersBar.js';
 import { ResultsList } from './ResultsList.js';
 import * as path from 'path';
 import * as fs from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+// ES module dirname shim
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 interface AppFirstModeProps {
   selectedApp: AppInfo | null;
@@ -19,22 +25,36 @@ let dbAdapter: DatabaseAdapter | null = null;
 
 function getDbAdapter(): DatabaseAdapter {
   if (!dbAdapter) {
-    // Try to find the core database
+    // Resolve path from the monorepo root
+    // When running from dist/cli.js, we need to go up to the packages directory
     const possiblePaths = [
-      path.join(__dirname, '..', '..', '..', 'core', 'data', 'shortcuts.db'),
-      path.join(process.cwd(), 'packages', 'core', 'data', 'shortcuts.db'),
-      path.join(__dirname, '..', '..', 'core', 'data', 'shortcuts.db'),
+      // From dist/components/ go to packages/core/data/shortcuts.db
+      path.resolve(__dirname, '..', '..', '..', 'core', 'data', 'shortcuts.db'),
+      // From packages/tui go to packages/core/data/shortcuts.db
+      path.resolve(__dirname, '..', 'core', 'data', 'shortcuts.db'),
+      // From process.cwd() which might be packages/tui
+      path.resolve(process.cwd(), '..', 'core', 'data', 'shortcuts.db'),
+      // From process.cwd() which might be monorepo root
+      path.resolve(process.cwd(), 'packages', 'core', 'data', 'shortcuts.db'),
     ];
 
-    let coreDbPath = possiblePaths.find((p) => fs.existsSync(p));
+    let coreDbPath = possiblePaths.find((p) => {
+      const exists = fs.existsSync(p);
+      if (exists) {
+        console.log(`✓ Found core database at: ${p}`);
+      }
+      return exists;
+    });
 
     if (!coreDbPath) {
-      // Fallback: create an in-memory adapter with no data
-      console.error('Warning: Core database not found. Using empty adapter.');
+      console.error('❌ Core database not found. Searched paths:');
+      possiblePaths.forEach(p => console.error(`   - ${p}`));
+      console.error('Using empty in-memory database.');
       coreDbPath = ':memory:';
     }
 
-    dbAdapter = new SQLiteAdapter(coreDbPath);
+    const userDbPath = path.join(process.env.HOME || '~', '.katasumi', 'user-data.db');
+    dbAdapter = new SQLiteAdapter(coreDbPath, userDbPath);
   }
   return dbAdapter;
 }

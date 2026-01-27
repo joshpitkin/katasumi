@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
     });
     
     // Transform to API format
-    const result = shortcuts.map(s => ({
+    const result = shortcuts.map((s) => ({
       id: s.id,
       app: s.app,
       action: s.action,

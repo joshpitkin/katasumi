@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@katasumi/core/dist/generated/prisma-postgres';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 

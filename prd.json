@@ -451,9 +451,10 @@
         "Run 'npm run test --workspace=@katasumi/tui' to execute App-First mode tests",
         "Run 'npm test' from root to execute all package tests"
       ],
-      "passes": true,
-      "priority": 3,
-      "priorityRationale": "App-First mode depends on TUI scaffold and search engine"
+      "passes": false,
+      "priority": 1,
+      "priorityRationale": "TUI App-First mode has bug: ES module __dirname not defined causing database path resolution to fail. Fixed by adding fileURLToPath/dirname shim. After rebuild, should be fully functional.",
+      "implementationNotes": "Bug fix applied 2026-01-27: Added ES module dirname shim (fileURLToPath/dirname) to AppFirstMode.tsx to resolve database path correctly when running from dist/ directory. Without this, __dirname was undefined causing 'No apps found' error."
     },
     {
       "id": "PHASE2-TUI-003",
@@ -484,7 +485,7 @@
         "Run 'npm test' from root to execute all package tests"
       ],
       "passes": false,
-      "priority": 3,
+      "priority": 2,
       "priorityRationale": "Full-Phrase mode depends on App-First mode and AI search"
     },
     {
@@ -640,8 +641,8 @@
         "Run 'npm test' from root to execute all package tests"
       ],
       "passes": false,
-      "priority": 3,
-      "priorityRationale": "App-First mode for web parallels TUI development"
+      "priority": 1,
+      "priorityRationale": "Web search is critical missing functionality - UI scaffold exists but KeywordSearchEngine integration needed. SearchBar has TODO placeholder, must wire up database adapter and search engine to make web app functional."
     },
     {
       "id": "PHASE3-WEB-004",
