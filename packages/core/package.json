@@ -10,7 +10,8 @@
     "prisma:generate": "prisma generate",
     "migrate": "node dist/migrate.js",
     "migrate:rollback": "node dist/migrate.js rollback",
-    "migrate:status": "node dist/migrate.js status"
+    "migrate:status": "node dist/migrate.js status",
+    "seed": "node dist/seed.js"
   },
   "keywords": [
     "shortcuts",
