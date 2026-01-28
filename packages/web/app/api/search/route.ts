@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '50')
 
     // Initialize database adapter and search engine
-    const dbUrl = process.env.DATABASE_URL || 'postgresql://user:password@localhost:5432/katasumi'
+    const dbUrl = process.env.DATABASE_URL || 'postgres://user:password@localhost:5432/katasumi'
     const adapter = new PostgresAdapter(dbUrl)
     const searchEngine = new KeywordSearchEngine(adapter)
 

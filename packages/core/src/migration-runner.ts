@@ -9,8 +9,8 @@ import * as path from 'path';
 export interface Migration {
   id: string;
   name: string;
-  up: (db: any) => Promise<void>;
-  down: (db: any) => Promise<void>;
+  up: (db: any, dbType?: string) => Promise<void>;
+  down: (db: any, dbType?: string) => Promise<void>;
 }
 
 export interface MigrationRecord {
@@ -22,24 +22,35 @@ export interface MigrationRecord {
 export class MigrationRunner {
   private db: any;
   private migrationsPath: string;
+  private dbType: string;
 
   constructor(db: any, migrationsPath: string) {
     this.db = db;
     this.migrationsPath = migrationsPath;
+    this.dbType = process.env.DB_TYPE || 'sqlite';
   }
 
   /**
    * Ensure the migrations table exists
    */
   private async ensureMigrationsTable(): Promise<void> {
-    // For SQLite
-    await this.db.$executeRawUnsafe(`
-      CREATE TABLE IF NOT EXISTS _migrations (
-        id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        applied_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
+    if (this.dbType === 'postgres') {
+      await this.db.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS _migrations (
+          id TEXT PRIMARY KEY,
+          name TEXT NOT NULL,
+          applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+    } else {
+      await this.db.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS _migrations (
+          id TEXT PRIMARY KEY,
+          name TEXT NOT NULL,
+          applied_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+    }
   }
 
   /**
@@ -65,19 +76,32 @@ export class MigrationRunner {
    * Record a migration as applied
    */
   private async recordMigration(id: string, name: string): Promise<void> {
-    await this.db.$executeRawUnsafe(`
-      INSERT INTO _migrations (id, name, applied_at) 
-      VALUES (?, ?, ?)
-    `, id, name, new Date().toISOString());
+    if (this.dbType === 'postgres') {
+      await this.db.$executeRawUnsafe(`
+        INSERT INTO _migrations (id, name, applied_at) 
+        VALUES ($1, $2, $3)
+      `, id, name, new Date().toISOString());
+    } else {
+      await this.db.$executeRawUnsafe(`
+        INSERT INTO _migrations (id, name, applied_at) 
+        VALUES (?, ?, ?)
+      `, id, name, new Date().toISOString());
+    }
   }
 
   /**
    * Remove a migration record
    */
   private async removeMigration(id: string): Promise<void> {
-    await this.db.$executeRawUnsafe(`
-      DELETE FROM _migrations WHERE id = ?
-    `, id);
+    if (this.dbType === 'postgres') {
+      await this.db.$executeRawUnsafe(`
+        DELETE FROM _migrations WHERE id = $1
+      `, id);
+    } else {
+      await this.db.$executeRawUnsafe(`
+        DELETE FROM _migrations WHERE id = ?
+      `, id);
+    }
   }
 
   /**
@@ -130,7 +154,7 @@ export class MigrationRunner {
       console.log(`Applying migration: ${migration.name}`);
       
       try {
-        await migration.up(this.db);
+        await migration.up(this.db, this.dbType);
         await this.recordMigration(migration.id, migration.name);
         console.log(`✓ Applied: ${migration.name}`);
       } catch (error) {
@@ -166,7 +190,7 @@ export class MigrationRunner {
     console.log(`Rolling back migration: ${migration.name}`);
     
     try {
-      await migration.down(this.db);
+      await migration.down(this.db, this.dbType);
       await this.removeMigration(migration.id);
       console.log(`✓ Rolled back: ${migration.name}`);
     } catch (error) {

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { PrismaClient } from '../src/generated/prisma';
+import { PrismaClient as PrismaClientPostgres } from '../src/generated/prisma-postgres';
 import { PrismaLibSql } from '@prisma/adapter-libsql';
 import * as dotenv from 'dotenv';
 import { apps, shortcuts } from './seed-data';
@@ -7,15 +8,34 @@ import { apps, shortcuts } from './seed-data';
 dotenv.config();
 
 async function seed() {
-  const dbUrl = process.env.DATABASE_URL || 'file:./katasumi.db';
+  const dbType = process.env.DB_TYPE || 'sqlite';
+  let dbUrl = process.env.DATABASE_URL || 'file:./katasumi.db';
+  
+  // Normalize PostgreSQL URL scheme
+  if (dbUrl.startsWith('postgresql://')) {
+    dbUrl = dbUrl.replace('postgresql://', 'postgres://');
+  }
   
   console.log('🌱 Seeding database with shortcuts data...');
   console.log(`Database URL: ${dbUrl}`);
   
-  const adapter = new PrismaLibSql({
-    url: dbUrl
-  });
-  const prisma = new PrismaClient({ adapter });
+  let prisma: any;
+  
+  if (dbType === 'postgres') {
+    // Use PostgreSQL client with pg adapter
+    const { Pool } = await import('pg');
+    const { PrismaPg } = await import('@prisma/adapter-pg');
+    
+    const pool = new Pool({ connectionString: dbUrl });
+    const adapter = new PrismaPg(pool);
+    prisma = new PrismaClientPostgres({ adapter });
+  } else {
+    // Use SQLite client with adapter
+    const adapter = new PrismaLibSql({
+      url: dbUrl
+    });
+    prisma = new PrismaClient({ adapter });
+  }
   
   try {
     // Clear existing data

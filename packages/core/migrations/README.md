@@ -51,7 +51,7 @@ cd packages/core
 DATABASE_URL="file:./database.db" npm run migrate
 
 # For PostgreSQL
-DATABASE_URL="postgresql://user:password@localhost:5432/db" DB_TYPE=postgres npm run migrate
+DATABASE_URL="postgres://user:password@localhost:5432/db" DB_TYPE=postgres npm run migrate
 ```
 
 ## Supported Databases

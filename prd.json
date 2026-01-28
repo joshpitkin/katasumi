@@ -1,7 +1,7 @@
 {
   "project": "Katasumi",
   "version": "1.0.0",
-  "lastUpdated": "2026-01-28T00:06:29.435Z",
+  "lastUpdated": "2026-01-28T00:30:00.000Z",
   "requirements": [
     {
       "id": "PHASE1-DB-003",
@@ -619,7 +619,9 @@
       "passes": true,
       "priority": 3,
       "priorityRationale": "Keyboard navigation should be built into features as they develop",
+      "relatedRequirements": ["PHASE3-WEB-014 - Update to vi-style shortcuts (replaces F-keys with a/p/g/f)"],
       "implementationNotes": [
+        "NOTE: This requirement needs to be updated to match PHASE3-WEB-014 vi-style shortcuts",
         "Created comprehensive keyboard navigation test suite in packages/tui/src/__tests__/keyboard-navigation.test.ts",
         "Verified all global shortcuts: Ctrl+C, q (quit), ? (help), Tab (toggle mode), F4 (toggle AI), F5 (platform selector)",
         "Verified navigation shortcuts: arrow keys, Enter, Esc",
@@ -1011,7 +1013,7 @@
     },
     {
       "id": "PHASE2-TUI-008",
-      "category": "Phase 2: TUI - Login Command",
+      "category": "Phase 3: TUI - Login Command",
       "description": "Implement 'katasumi login' CLI command for authenticating premium users and storing API token",
       "acceptanceCriteria": [
         "Command prompts for email and password",
@@ -1229,8 +1231,9 @@
         "Run 'npm test' from root to execute all package tests"
       ],
       "passes": false,
-      "priority": 4,
-      "priorityRationale": "Keyboard shortcuts enhance UX but not critical for launch"
+      "priority": 1,
+      "priorityRationale": "UPDATED: Now P1 - keyboard shortcuts are critical for keyboard-first tool. See PHASE3-WEB-014 for vi-style implementation that replaces F-keys.",
+      "relatedRequirements": ["PHASE3-WEB-014 - Superseded by vi-style shortcuts requirement"]
     },
     {
       "id": "PHASE3-WEB-010",
@@ -1298,34 +1301,128 @@
       "priorityRationale": "Accessibility important but can be addressed after core features"
     },
     {
-      "id": "PHASE3-WEB-012",
-      "category": "Phase 3: Web - E2E Tests",
-      "description": "Implement end-to-end tests for critical web UI user flows using Playwright",
+      "id": "PHASE4-WEB-014",
+      "category": "Phase 3: Web/TUI - Vi-Style Keyboard Shortcuts",
+      "description": "Standardize keyboard shortcuts across TUI and Web UI using vi-style home row keys, eliminating F-keys for better accessibility and consistency",
       "acceptanceCriteria": [
-        "E2E tests cover: signup, login, search, view details, sync",
-        "Tests run against local development server",
-        "Tests use Playwright for browser automation",
-        "Tests cover Chrome, Firefox, Safari (webkit)",
-        "Tests include mobile viewport testing",
-        "Visual regression tests for key pages",
-        "Tests run in CI pipeline",
-        "Test database isolated (seeded with test data)"
+        "Replace F-keys with vi-style home row alternatives",
+        "Both TUI and Web UI use identical keyboard shortcuts",
+        "a - Toggle AI (replaces F4)",
+        "p - Platform selector (replaces F5)",
+        "g - Go to app selector / home (replaces F2)",
+        "f - Focus filters (replaces F3)",
+        "/ - Focus search input",
+        "Esc in input field - Unfocus without clearing (so you can use global shortcuts)",
+        "Ctrl+L in input field - Clear search and stay focused",
+        "Enter in input field - Submit search and unfocus (so you can navigate results)",
+        "Tab - Toggle mode (keep existing)",
+        "? - Help overlay (keep existing)",
+        "Esc - Go back / close (keep existing)",
+        "Arrow keys - Navigate lists (keep existing)",
+        "Search triggers on Enter in Web UI without requiring button click",
+        "All shortcuts documented in help overlay (?)",
+        "Help overlay shows identical shortcuts for TUI and Web UI",
+        "Footer displays most common shortcuts with new key bindings",
+        "Shortcuts work consistently in both App-First and Full-Phrase modes"
       ],
       "stepsToVerify": [
+        "Open TUI and press 'a' to toggle AI (verify works)",
+        "Press 'p' to open platform selector (verify works)",
+        "In App-First mode, select app then press 'g' to return to app selector",
+        "Press 'f' to focus filters (verify cursor moves to filters)",
+        "Press '/' to focus search input (verify cursor in search field)",
+        "Type a query, press Esc, verify input unfocuses WITHOUT clearing (query preserved)",
+        "Type a query, press 'a', verify AI toggles (because input is unfocused)",
+        "Focus input again, type query, press Ctrl+L, verify search clears and input stays focused",
+        "Type a query in Web UI, press Enter, verify search executes and input unfocuses",
+        "After Enter, press 'a', verify AI toggles (because input is unfocused)",
+        "CRITICAL: Type 'a', 'p', 'g', 'f' in search input, verify they insert characters and do NOT trigger shortcuts",
+        "CRITICAL: Press 'a' outside search input, verify AI toggles",
+        "CRITICAL: Press '/' while typing in search, verify it inserts '/' character (not focus)",
+        "Press '/' from outside input, verify search input gains focus",
+        "Type query, press Esc, verify input unfocuses but query preserved",
+        "After Esc, press 'p', verify platform selector opens (shortcuts work)",
+        "Press '?' in both TUI and Web UI, verify help overlay shows same shortcuts",
+        "Verify F2, F3, F4, F5 no longer trigger actions",
+        "Open Web UI and test all same shortcuts (a, p, g, f, /, Ctrl+L, Enter)",
+        "Verify footer shows new shortcuts: 'a' Toggle AI, 'p' Platform, 'g' Go to App",
+        "In Full-Phrase mode, verify 'a' toggles AI, 'p' opens platform selector",
+        "Test all shortcuts with keyboard only (no mouse), verify full functionality"
+      ],
+      "passes": false,
+      "priority": 1,
+      "priorityRationale": "Critical UX issue - F-keys are not accessible/intuitive, shortcuts don't match between TUI and Web UI, and users expect vi-style navigation in a keyboard-first tool. This blocks effective usage of the app and creates confusion when switching between TUI and Web.",
+      "implementationNotes": "Update GlobalKeybindings.tsx (TUI), page.tsx keyboard handlers (Web UI), HelpOverlay components (both), and Footer components (both). Remove F-key listeners and replace with single-character keys. Ensure '/' doesn't conflict with search input typing. Consider using event.preventDefault() carefully to avoid breaking normal typing. Test that new shortcuts don't conflict with browser defaults (especially in Web UI). Update all tests that reference F-keys.\n\nSee KEYBOARD_SHORTCUTS.md for complete implementation guide including input field handling, testing checklist, and common pitfalls.",
+      "technicalNotes": "CRITICAL: Prevent shortcuts from firing when typing in input fields.\n\nWeb UI Implementation:\n1. Add keyboard event handler at document level (useEffect in page.tsx or layout.tsx)\n2. Check event.target before handling shortcuts: if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) { return; }\n3. Exception: Escape unfocuses without clearing (so users can use shortcuts while keeping search)\n4. Exception: Ctrl+L clears input and keeps focus (standard browser behavior)\n5. Exception: Enter executes search and unfocuses (so users can navigate results)\n6. Exception: Always allow '/' to focus search input (unless already in an input)\n7. Single-key shortcuts (a, p, g, f) MUST check target is not input/textarea\n8. Modifier shortcuts (Ctrl+K, Ctrl+A, etc.) can work even in inputs (browser convention)\n9. Example code:\n\n```typescript\nuseEffect(() => {\n  const handleKeyDown = (e: KeyboardEvent) => {\n    const target = e.target as HTMLElement;\n    const isInput = target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement;\n    \n    // Always allow Escape (for unfocusing without clearing)\n    if (e.key === 'Escape') {\n      if (isInput) {\n        target.blur(); // Unfocus but keep query (so user can use shortcuts)\n      }\n      // If not in input, let it bubble for modal/overlay closing\n      return;\n    }\n    \n    // Ctrl+L clears input and keeps focus (standard browser behavior)\n    if ((e.ctrlKey || e.metaKey) && e.key === 'l' && isInput) {\n      e.preventDefault();\n      (target as HTMLInputElement).value = '';\n      // Keep focused so user can type new query\n      return;\n    }\n    \n    // Always allow '/' to focus search (unless in input already)\n    if (e.key === '/' && !isInput) {\n      e.preventDefault();\n      searchInputRef.current?.focus();\n      return;\n    }\n    \n    // Block single-key shortcuts when typing in input\n    if (isInput && !e.ctrlKey && !e.metaKey) {\n      return; // Let the input handle it\n    }\n    \n    // Now handle shortcuts\n    if (e.key === 'a' && !isInput) { toggleAI(); }\n    if (e.key === 'p' && !isInput) { openPlatformSelector(); }\n    if (e.key === 'g' && !isInput) { goToAppSelector(); }\n    if (e.key === 'f' && !isInput) { focusFilters(); }\n    \n    // Modifier shortcuts work everywhere\n    if ((e.metaKey || e.ctrlKey) && e.key === 'k') { openAppSelector(); }\n  };\n  \n  document.addEventListener('keydown', handleKeyDown);\n  return () => document.removeEventListener('keydown', handleKeyDown);\n}, [deps]);\n```\n\nTUI Implementation:\n1. Ink's useInput hook automatically only captures when component is focused\n2. Input components (search fields) should have focus, preventing global shortcuts\n3. When input is focused, global shortcuts won't trigger (Ink behavior)\n4. Use separate keybinding contexts for different views\n5. Example: When search input is active, only Escape and navigation keys work\n\nTesting:\n- Verify typing 'a', 'p', 'g', 'f' in search input does NOT trigger shortcuts\n- Verify '/' focuses search input from anywhere\n- Verify Escape unfocuses input WITHOUT clearing (query preserved)\n- Verify after Escape, 'a'/'p'/'g'/'f' shortcuts work (input is unfocused)\n- Verify Ctrl+L clears search and keeps input focused\n- Verify Enter in search input unfocuses (so you can navigate results with shortcuts)\n- Verify Tab, ?, Ctrl+C still work when input is focused (global shortcuts)\n\nKey UX Flow:\n1. User types query → presses Esc → query preserved, can use shortcuts\n2. User types query → presses Ctrl+L → query cleared, can type new one\n3. User types query → presses Enter → search runs, can navigate results with shortcuts"
+    },
+    {
+      "id": "PHASE3-WEB-012",
+      "category": "Phase 3: Web - E2E Tests (Core API & Database)",
+      "description": "Implement end-to-end tests for core web UI flows that verify API routes work correctly with PostgreSQL database",
+      "acceptanceCriteria": [
+        "E2E tests use Playwright for browser automation",
+        "Tests run against local development server with PostgreSQL",
+        "Test database seeded with consistent test data before each run",
+        "Search flow test: submit query via /api/search, verify results rendered correctly",
+        "Search flow test: verify results come from PostgreSQL database (not mocked)",
+        "Search flow test: verify keyboard shortcuts filtering works with database",
+        "App selector test: verify /api/apps endpoint returns apps from database",
+        "App selector test: verify selecting app filters shortcuts correctly",
+        "Detail view test: click shortcut, verify detail modal displays database fields correctly",
+        "AI search test: verify /api/ai endpoint works (can mock AI response, but database query must be real)",
+        "Platform filter test: verify platform filtering queries database correctly",
+        "Error handling test: simulate database connection failure, verify user-friendly error message",
+        "Tests verify actual SQL queries executed against PostgreSQL (no mocking of database layer)",
+        "All tests use real PostgresAdapter, not SQLite or mocks"
+      ],
+      "stepsToVerify": [
+        "Set up test PostgreSQL database with npm run migrate && npm run seed",
         "Run 'pnpm run test:e2e' in web package",
-        "Verify signup flow test creates user and logs in",
-        "Verify search flow test searches and views details",
-        "Verify sync test creates shortcut in TUI and sees it in web",
-        "Check test runs in Chrome, Firefox, Safari",
-        "Verify mobile viewport test runs at 375px width",
-        "Check visual regression screenshots for diffs",
-        "Run in CI and verify passing",
+        "Verify search flow test submits to /api/search and receives real database results",
+        "Verify app selector test loads apps from /api/apps (PostgreSQL query)",
+        "Verify detail modal displays all fields from database (keys, action, context, description, etc.)",
+        "Verify platform filter test queries PostgreSQL with platform WHERE clause",
+        "Verify AI search test calls /api/ai and receives database results (not mocked data)",
+        "Verify error handling test shows user-friendly message when database unavailable",
+        "Check test logs and verify PostgresAdapter connection messages",
         "Run 'npm run test:e2e --workspace=@katasumi/web' to execute E2E tests",
         "Run 'npm test' from root to execute all package tests"
       ],
       "passes": false,
+      "priority": 1,
+      "priorityRationale": "Critical to verify web UI works correctly with PostgreSQL after quick-setup.sh and migrate/seed are working. These tests ensure API routes connect to real database and return correct data. Without these tests, production issues with database queries won't be caught during development.",
+      "implementationNotes": "Focus on testing the full stack: browser → API routes → PostgresAdapter → PostgreSQL. Use Playwright to interact with UI, but verify that backend actually queries PostgreSQL. Do not mock DatabaseAdapter or database responses. Test data should be seeded consistently so tests can make assertions about specific shortcuts/apps. This catches issues like incorrect SQL queries, missing database fields, connection problems, etc."
+    },
+    {
+      "id": "PHASE3-WEB-013",
+      "category": "Phase 3: Web - E2E Tests (CI, Mobile, Sync)",
+      "description": "Implement advanced end-to-end tests for cross-browser, mobile, sync, and visual regression testing",
+      "acceptanceCriteria": [
+        "Tests cover Chrome, Firefox, Safari (webkit)",
+        "Tests include mobile viewport testing (375px, 768px)",
+        "Visual regression tests for key pages using Playwright screenshots",
+        "Sync flow test: create shortcut in TUI, verify appears in web after sync",
+        "Auth flow tests: signup, login, logout",
+        "Tests run in CI pipeline with matrix of browsers",
+        "CI uses dockerized PostgreSQL for consistent test environment",
+        "Test artifacts (screenshots, videos) uploaded on failure",
+        "Performance tests: measure page load time, search response time"
+      ],
+      "stepsToVerify": [
+        "Run 'pnpm run test:e2e:all-browsers' and verify runs in Chrome, Firefox, Safari",
+        "Verify mobile viewport tests run at 375px and 768px widths",
+        "Check visual regression tests capture screenshots and compare diffs",
+        "Verify signup flow test creates user and logs in successfully",
+        "Verify sync test creates shortcut in TUI CLI and sees it in web dashboard",
+        "Run tests in CI (GitHub Actions) and verify matrix strategy works",
+        "Verify CI spins up PostgreSQL container and seeds test data",
+        "Fail a test and verify screenshot/video artifacts uploaded",
+        "Check performance test logs and verify page load <2s, search <500ms",
+        "Run 'npm run test:e2e:ci --workspace=@katasumi/web' to execute CI E2E tests"
+      ],
+      "passes": false,
       "priority": 4,
-      "priorityRationale": "E2E tests after web features complete"
+      "priorityRationale": "Advanced e2e tests (CI, mobile, cross-browser, sync) can come after core API/database tests are working. These are important for production readiness but not blocking MVP development."
     },
     {
       "id": "PHASE1-DOCS-002",
@@ -1385,6 +1482,75 @@
       "passes": false,
       "priority": 5,
       "priorityRationale": "Contributing guide important for open source but not for initial development"
+    },
+    {
+      "id": "PHASE1-SEARCH-004",
+      "category": "Phase 1: Search - Smart Full Phrase Search",
+      "description": "Improve full phrase search to prioritize app name matches and filter results intelligently",
+      "acceptanceCriteria": [
+        "Search query is analyzed for potential app name matches",
+        "If query matches an app name (fuzzy or exact), prioritize that app's shortcuts",
+        "When app name match is found, filter out shortcuts from non-matching apps",
+        "App name matching should be case-insensitive and fuzzy (e.g., 'vsc' matches 'VS Code')",
+        "If no app name match, show cross-app results as before",
+        "Search query like 'vscode copy line' shows only VS Code shortcuts",
+        "Search query like 'copy line' (no app match) shows results from all apps",
+        "App name detection works with common abbreviations (vsc, ps, chrome, etc.)",
+        "Results still ranked by relevance within the filtered app results",
+        "Performance remains under 500ms for full phrase search"
+      ],
+      "stepsToVerify": [
+        "Search 'vscode copy' in Full-Phrase mode and verify only VS Code results shown",
+        "Search 'vsc paste' and verify VS Code shortcuts displayed (fuzzy app match)",
+        "Search 'copy line' and verify results from multiple apps shown (no app match)",
+        "Search 'chrome refresh' and verify only Chrome/browser shortcuts shown",
+        "Search 'ps select layer' and verify only Photoshop results (abbreviation match)",
+        "Verify search performance stays under 500ms with debug timing",
+        "Test with app names containing spaces ('visual studio code', 'sublime text')",
+        "Test edge cases: query matches both app name and action in different apps",
+        "Run 'pnpm test --filter=@katasumi/core' and verify smart search tests pass",
+        "Test in both TUI and Web Full-Phrase mode to verify consistent behavior"
+      ],
+      "passes": false,
+      "priority": 1,
+      "priorityRationale": "Full phrase search is core functionality and current results are not smart enough. Users expect app-specific results when they mention an app name. This improves search quality significantly without requiring AI."
+    },
+    {
+      "id": "PHASE2-TUI-013",
+      "category": "Phase 2: TUI - Responsive Design for Terminal Size",
+      "description": "Dynamically adjust TUI layout and result count based on terminal pane size to prevent scrolling",
+      "acceptanceCriteria": [
+        "Detect terminal rows and columns using stdout.rows and stdout.columns",
+        "Calculate available space for results after header, input, filters, and footer",
+        "Dynamically set max visible results based on available rows",
+        "Show 'X more results' indicator when results exceed visible count",
+        "Display warning message if terminal height < 20 rows: 'Terminal too small, please resize'",
+        "Display warning message if terminal width < 80 columns: 'Terminal too narrow, please resize'",
+        "Update result count when terminal is resized (listen to 'resize' event)",
+        "Minimum viable size: 20 rows x 80 columns",
+        "Results should use as much space as available (e.g., show 25 results if space allows)",
+        "No scrolling needed within the TUI (all navigation via Up/Down arrow keys)",
+        "Responsive design works in both App-First and Full-Phrase modes",
+        "Detail view adapts to terminal height (truncate long descriptions if needed)",
+        "Platform selector and help overlay fit within terminal bounds"
+      ],
+      "stepsToVerify": [
+        "Run TUI in full-screen terminal and verify all content fits without scrolling",
+        "Resize terminal to 25 rows and verify appropriate number of results shown",
+        "Resize terminal to 15 rows and verify warning message displayed",
+        "Resize terminal to 40 columns and verify narrow warning shown",
+        "Resize terminal while TUI is running and verify results update dynamically",
+        "Search with 100 results and verify only N results shown (N = available space)",
+        "Verify '... X more results' indicator updates with different terminal sizes",
+        "Open detail view in small terminal and verify content fits (no overflow)",
+        "Test in both App-First and Full-Phrase modes with varying terminal sizes",
+        "Test on macOS Terminal, iTerm2, Gnome Terminal, Windows Terminal",
+        "Run 'pnpm test --filter=@katasumi/tui' and verify responsive tests pass",
+        "Use environment variable to simulate different terminal sizes in tests"
+      ],
+      "passes": false,
+      "priority": 1,
+      "priorityRationale": "TUI must be usable in any terminal size. Current fixed result counts cause scrolling issues in smaller terminals and waste space in larger ones. Responsive design is essential for good UX across different terminal configurations."
     }
   ]
 }

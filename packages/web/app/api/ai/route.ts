@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Initialize AI search engine
-    const dbUrl = process.env.DATABASE_URL || 'postgresql://user:password@localhost:5432/katasumi';
+    const dbUrl = process.env.DATABASE_URL || 'postgres://user:password@localhost:5432/katasumi';
     const adapter = new PostgresAdapter(dbUrl);
     
     // Get AI provider config from environment

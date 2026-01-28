@@ -69,7 +69,7 @@ The default configuration in `.env.local` is already set up for the Docker Postg
 ### 4. Run Setup
 
 ```bash
-npm run setup
+npm run setup:tui
 ```
 
 This command:
@@ -83,10 +83,10 @@ This command:
 ```bash
 # Migrate PostgreSQL schema
 cd packages/core
-DATABASE_URL="postgresql://katasumi:dev_password@localhost:5432/katasumi_dev" DB_TYPE="postgres" npm run migrate
+DATABASE_URL="postgres://katasumi:dev_password@localhost:5432/katasumi_dev" DB_TYPE="postgres" npm run migrate
 
 # Seed PostgreSQL with shortcuts data
-DATABASE_URL="postgresql://katasumi:dev_password@localhost:5432/katasumi_dev" npm run seed
+DATABASE_URL="postgres://katasumi:dev_password@localhost:5432/katasumi_dev" npm run seed
 
 cd ../..
 ```
@@ -183,7 +183,7 @@ Used by Next.js web application:
 
 ```bash
 # PostgreSQL connection
-DATABASE_URL="postgresql://katasumi:dev_password@localhost:5432/katasumi_dev"
+DATABASE_URL="postgres://katasumi:dev_password@localhost:5432/katasumi_dev"
 NODE_ENV="development"
 
 # Optional: AI API keys
@@ -206,7 +206,7 @@ The TUI doesn't require any environment configuration. It uses the bundled datab
 The SQLite database is automatically created when you run:
 
 ```bash
-npm run setup
+npm run setup:tui
 ```
 
 This creates:
@@ -222,10 +222,10 @@ After starting PostgreSQL (Docker or manual), set it up:
 cd packages/core
 
 # Run migrations
-DATABASE_URL="postgresql://katasumi:dev_password@localhost:5432/katasumi_dev" DB_TYPE="postgres" npm run migrate
+DATABASE_URL="postgres://katasumi:dev_password@localhost:5432/katasumi_dev" DB_TYPE="postgres" npm run migrate
 
 # Seed with shortcuts data
-DATABASE_URL="postgresql://katasumi:dev_password@localhost:5432/katasumi_dev" npm run seed
+DATABASE_URL="postgres://katasumi:dev_password@localhost:5432/katasumi_dev" npm run seed
 
 cd ../..
 ```
@@ -296,7 +296,7 @@ npm run seed --workspace=@katasumi/core
 
 # PostgreSQL (Web)
 cd packages/core
-DATABASE_URL="postgresql://katasumi:dev_password@localhost:5432/katasumi_dev" npm run seed
+DATABASE_URL="postgres://katasumi:dev_password@localhost:5432/katasumi_dev" npm run seed
 cd ../..
 ```
 

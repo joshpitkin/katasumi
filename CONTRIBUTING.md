@@ -158,12 +158,12 @@ cp packages/web/.env.example packages/web/.env.local
 
 ```bash
 # Build SQLite database for TUI
-npm run setup
+npm run setup:tui
 
 # Setup PostgreSQL for Web
 cd packages/core
-DATABASE_URL="postgresql://katasumi:dev_password@localhost:5432/katasumi_dev" DB_TYPE="postgres" npm run migrate
-DATABASE_URL="postgresql://katasumi:dev_password@localhost:5432/katasumi_dev" npm run seed
+DATABASE_URL="postgres://katasumi:dev_password@localhost:5432/katasumi_dev" DB_TYPE="postgres" npm run migrate
+DATABASE_URL="postgres://katasumi:dev_password@localhost:5432/katasumi_dev" npm run seed
 cd ../..
 ```
 

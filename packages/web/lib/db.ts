@@ -9,7 +9,7 @@ declare global {
 }
 
 function createPrismaClient() {
-  const connectionString = process.env.DATABASE_URL || 'postgresql://user:password@localhost:5432/katasumi';
+  const connectionString = process.env.DATABASE_URL || 'postgres://user:password@localhost:5432/katasumi';
   const pool = new Pool({ connectionString });
   const adapter = new PrismaPg(pool);
   return new PrismaClient({ adapter });

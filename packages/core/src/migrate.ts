@@ -8,6 +8,7 @@
  */
 
 import { PrismaClient } from '../src/generated/prisma';
+import { PrismaClient as PrismaClientPostgres } from '../src/generated/prisma-postgres';
 import { PrismaLibSql } from '@prisma/adapter-libsql';
 import { MigrationRunner } from './migration-runner';
 import * as path from 'path';
@@ -30,17 +31,36 @@ async function main() {
     }
   }
   
+  // Normalize PostgreSQL URL scheme (postgres:// is more widely supported than postgresql://)
+  if (databaseUrl.startsWith('postgresql://')) {
+    databaseUrl = databaseUrl.replace('postgresql://', 'postgres://');
+    process.env.DATABASE_URL = databaseUrl;
+  }
+  
   console.log(`Using database: ${databaseUrl}`);
   
-  // Create adapter for libSQL/SQLite
-  const adapter = new PrismaLibSql({
-    url: databaseUrl
-  });
+  // Initialize Prisma client based on database type
+  let prisma: any;
   
-  // Initialize Prisma client with adapter for Prisma 7
-  const prisma = new PrismaClient({
-    adapter,
-  });
+  if (dbType === 'postgres') {
+    // Use PostgreSQL client with pg adapter
+    const { Pool } = await import('pg');
+    const { PrismaPg } = await import('@prisma/adapter-pg');
+    
+    const pool = new Pool({ connectionString: databaseUrl });
+    const adapter = new PrismaPg(pool);
+    prisma = new PrismaClientPostgres({ adapter });
+  } else {
+    // Create adapter for libSQL/SQLite
+    const adapter = new PrismaLibSql({
+      url: databaseUrl
+    });
+    
+    // Initialize Prisma client with adapter for Prisma 7
+    prisma = new PrismaClient({
+      adapter,
+    });
+  }
   
   try {
     // Ensure database connection

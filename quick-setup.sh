@@ -53,24 +53,24 @@ npm install
 
 echo ""
 
-# Run setup
-echo "🔨 Building and setting up SQLite (TUI)..."
-npm run setup
-
-echo ""
-
-# Setup PostgreSQL if Docker is running
+# Setup PostgreSQL if Docker is running (do this BEFORE building)
 if docker-compose ps | grep -q "katasumi-postgres"; then
     echo "🗄️  Setting up PostgreSQL (Web)..."
     cd packages/core
-    DATABASE_URL="postgresql://katasumi:dev_password@localhost:5432/katasumi_dev" DB_TYPE="postgres" npm run migrate
-    DATABASE_URL="postgresql://katasumi:dev_password@localhost:5432/katasumi_dev" npm run seed
+    DATABASE_URL="postgres://katasumi:dev_password@localhost:5432/katasumi_dev" DB_TYPE="postgres" npm run migrate
+    DATABASE_URL="postgres://katasumi:dev_password@localhost:5432/katasumi_dev" DB_TYPE="postgres" npm run seed
     cd ../..
     echo "✅ PostgreSQL setup complete"
 else
     echo "⏭️  PostgreSQL not running via Docker. Skipping web database setup."
-    echo "   Run manually: cd packages/core && DATABASE_URL=<your-url> DB_TYPE=postgres npm run migrate && npm run seed"
+    echo "   Run manually: cd packages/core && DATABASE_URL=postgres://<user>:<pass>@localhost:5432/<db> DB_TYPE=postgres npm run migrate && npm run seed"
 fi
+
+echo ""
+
+# Run setup (builds SQLite for TUI)
+echo "🔨 Building and setting up SQLite (TUI)..."
+npm run setup:tui
 
 echo ""
 echo "✨ Setup complete!"

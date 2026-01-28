@@ -1047,7 +1047,50 @@ The TUI supports **two distinct search modes** to accommodate different user int
 - Workflow: Type natural language query → Get shortcuts across all apps
 - Best for: "How do I split my screen" or "markdown bold text"
 
-**Toggle between modes**: Press `Tab` (or `Ctrl+Tab` if Tab is used for autocomplete)
+**Toggle between modes**: Press `Tab`
+
+**Note on Keyboard Shortcuts**: Katasumi uses vi-style home row navigation:
+- `a` - Toggle AI (replaces F4)
+- `p` - Platform selector (replaces F5)  
+- `g` - Go to app selector/home (replaces F2)
+- `f` - Focus filters (replaces F3)
+- `/` - Focus search input
+- `Ctrl+L` or `Esc` - Clear search
+- `Enter` - Submit search
+
+**Keyboard Shortcut Behavior**:
+
+To prevent shortcuts from interfering with typing:
+
+1. **When typing in search input**: Single-key shortcuts (a, p, g, f) are DISABLED
+   - You can type normally without triggering actions
+   - Modifier shortcuts (Ctrl+K, Ctrl+A) still work (standard browser behavior)
+   - Global shortcuts (Tab, ?, Ctrl+C) still work
+
+2. **Special keys that work everywhere**:
+   - `/` - Always focuses search input (unless you're already typing)
+   - `Esc` - Unfocuses input WITHOUT clearing (so you can use a/p/g/f shortcuts while keeping your search), or closes modal if no input focused
+   - `Ctrl+L` - Clears search input and keeps it focused (standard browser shortcut)
+   - `Tab` - Always toggles mode (standard form navigation)
+   - `Enter` (in search input) - Executes search and unfocuses (so you can navigate results with keyboard)
+
+3. **Implementation** (Web UI):
+   ```typescript
+   // Check if user is typing before handling shortcuts
+   const isTyping = event.target instanceof HTMLInputElement || 
+                    event.target instanceof HTMLTextAreaElement;
+   
+   if (isTyping && !event.ctrlKey && !event.metaKey) {
+     return; // Don't handle single-key shortcuts
+   }
+   ```
+
+4. **Implementation** (TUI):
+   - Ink's useInput hook handles this automatically
+   - When input component has focus, global shortcuts are blocked
+   - Navigation works via arrow keys within input context
+
+> **📖 Complete Implementation Guide**: See [KEYBOARD_SHORTCUTS.md](KEYBOARD_SHORTCUTS.md) for comprehensive implementation details, testing checklist, common pitfalls, and full code examples for both Web and TUI.
 
 ---
 
@@ -1077,7 +1120,7 @@ This is the default mode, optimized for focused learning of one app at a time.
 ┌─ Katasumi v1.0 ───────────────────────────────────────────┐
 │                                                                   │
 │ Mode: [App-First] | Platform: macOS | AI: OFF                   │
-│ App: Vim (342 shortcuts) | [F2] Change App                       │
+│ App: Vim (342 shortcuts) | [g] Change App                       │
 │                                                                   │
 │ ┌─ Filters ─────────────────────────────────────────────────────┐ │
 │ │ Context: [All] ▾   Category: [All] ▾   Tags: [none] ▾       │ │
@@ -1101,8 +1144,8 @@ This is the default mode, optimized for focused learning of one app at a time.
 │ │   Ctrl+b         Page up                              [Normal] │ │
 │ └───────────────────────────────────────────────────────────────┘ │
 │                                                                   │
-│ Navigation: ↑↓ Select | Enter Details | / Search | F3 Filters   │
-│ Actions: [Ctrl+C] Quit | [F2] Change App | [F4] Toggle AI       │
+│ Navigation: ↑↓ Select | Enter Details | / Search | f Filters    │
+│ Actions: [Ctrl+C] Quit | g Change App | a Toggle AI | p Platform │
 └───────────────────────────────────────────────────────────────────┘
 
                    ↓ User types "nav" in Quick Search ↓
@@ -1110,7 +1153,7 @@ This is the default mode, optimized for focused learning of one app at a time.
 ┌─ Katasumi v1.0 ───────────────────────────────────────────┐
 │                                                                   │
 │ Mode: [App-First] | Platform: macOS | AI: OFF                   │
-│ App: Vim (342 shortcuts) | [F2] Change App                       │
+│ App: Vim (342 shortcuts) | [g] Change App                        │
 │                                                                   │
 │ ┌─ Filters ─────────────────────────────────────────────────────┐ │
 │ │ Context: [All] ▾   Category: [Navigation] ▾   Tags: [none] ▾ │ │
@@ -1130,16 +1173,16 @@ This is the default mode, optimized for focused learning of one app at a time.
 │ │   Ctrl+b         Page up                              [Normal] │ │
 │ └───────────────────────────────────────────────────────────────┘ │
 │                                                                   │
-│ Navigation: ↑↓ Select | Enter Details | Esc Clear | F3 Filters  │
-│ Actions: [Ctrl+C] Quit | [F2] Change App | [F4] Toggle AI       │
+│ Navigation: ↑↓ Select | Enter Details | Esc Clear | f Filters   │
+│ Actions: [Ctrl+C] Quit | g Change App | a Toggle AI | p Platform │
 └───────────────────────────────────────────────────────────────────┘
 
-             ↓ User presses F3 to focus Filters, then Enter on Context ↓
+             ↓ User presses 'f' to focus Filters, then Enter on Context ↓
 
 ┌─ Katasumi v1.0 ───────────────────────────────────────────┐
 │                                                                   │
 │ Mode: [App-First] | Platform: macOS | AI: OFF                   │
-│ App: Vim (342 shortcuts) | [F2] Change App                       │
+│ App: Vim (342 shortcuts) | [g] Change App                        │
 │                                                                   │
 │ ┌─ Filters ─────────────────────────────────────────────────────┐ │
 │ │ Context: [Normal Mode] ▾   Category: [All] ▾   Tags: [none] ▾│ │
@@ -1165,7 +1208,7 @@ This is the default mode, optimized for focused learning of one app at a time.
 │ └───────────────────────────────────────────────────────────────┘ │
 │                                                                   │
 │ Navigation: ↑↓ Select | Enter Confirm | Esc Close Dropdown      │
-│ Actions: [Ctrl+C] Quit | [F2] Change App | [F4] Toggle AI       │
+│ Actions: [Ctrl+C] Quit | g Change App | a Toggle AI | p Platform │
 └───────────────────────────────────────────────────────────────────┘
 
                    ↓ User presses Enter on a shortcut ↓
@@ -1215,11 +1258,11 @@ This is the default mode, optimized for focused learning of one app at a time.
 
 3. **Keyboard Navigation Flow**:
    - `/` or start typing → Focus Quick Search
-   - `F3` → Focus Filters (Tab through Context/Category/Tags)
+   - `f` → Focus Filters (Tab through Context/Category/Tags)
    - `↑↓` → Navigate results
    - `Enter` → Show details or confirm selection
    - `Esc` → Go back one level (Clear search → Close filter → Exit app → Quit)
-   - `F2` → Change app (back to app selector)
+   - `g` → Change app (back to app selector)
 
 4. **OS/Desktop Shortcuts**:
    - Treat OS shortcuts as special "apps" (macOS, Windows, GNOME, KDE, etc.)
@@ -1290,10 +1333,10 @@ This mode uses natural language queries and can leverage AI for better results.
 │ 💡 AI Insight: Cmd+B is the standard for bold in most MD editors│
 │                                                                   │
 │ Navigation: ↑↓ Select | Enter Details | / New Search            │
-│ Actions: [Ctrl+C] Quit | [Tab] Switch to App-First | [F4] AI OFF│
+│ Actions: [Ctrl+C] Quit | [Tab] Switch to App-First | [a] AI OFF│
 └───────────────────────────────────────────────────────────────────┘
 
-                 ↓ User turns AI off (F4) ↓
+                 ↓ User turns AI off (press 'a') ↓
 
 ┌─ Katasumi v1.0 ───────────────────────────────────────────┐
 │                                                                   │
@@ -1314,10 +1357,10 @@ This mode uses natural language queries and can leverage AI for better results.
 │ │     Bold                                                      │ │
 │ └───────────────────────────────────────────────────────────────┘ │
 │                                                                   │
-│ ⚡ Keyword search only (no AI). Press F4 to enable AI search.   │
+│ ⚡ Keyword search only (no AI). Press a to enable AI search.   │
 │                                                                   │
 │ Navigation: ↑↓ Select | Enter Details | / New Search            │
-│ Actions: [Ctrl+C] Quit | [Tab] Switch to App-First | [F4] AI ON │
+│ Actions: [Ctrl+C] Quit | [Tab] Switch to App-First | [a] AI ON │
 └───────────────────────────────────────────────────────────────────┘
 ```
 
@@ -1333,7 +1376,7 @@ This mode uses natural language queries and can leverage AI for better results.
    - Shows how different apps handle the same task
    - Useful for discovering alternatives
 
-3. **AI Toggle (F4)**:
+3. **AI Toggle (a)**:
    - ON: Uses AI to understand query and rank results
    - OFF: Falls back to fuzzy keyword search
    - Premium users: unlimited AI queries
@@ -1348,7 +1391,7 @@ This mode uses natural language queries and can leverage AI for better results.
 
 **2.2.4 Global Features (Both Modes)**
 
-**Platform Selector** (Cmd+P or F5):
+**Platform Selector** (press 'p'):
 ```
 ┌─ Platform Selection ─────────────────┐
 │ ▸ macOS (current)                   │
@@ -1395,7 +1438,7 @@ This mode uses natural language queries and can leverage AI for better results.
 │   Ctrl+C / q       Quit                              │
 │   ?                Show this help                    │
 │   Cmd+, / F6       Settings                          │
-│   Cmd+P / F5       Platform selector                 │
+│   p       Platform selector                 │
 │                                                       │
 │ Navigation:                                           │
 │   ↑↓               Navigate results                  │
@@ -1405,9 +1448,9 @@ This mode uses natural language queries and can leverage AI for better results.
 │                                                       │
 │ Search Modes:                                         │
 │   Tab              Toggle App-First ↔ Full-Phrase    │
-│   F2               Change app (App-First mode)       │
-│   F3               Focus filters (App-First mode)    │
-│   F4               Toggle AI on/off                  │
+│   g               Change app (App-First mode)       │
+│   f               Focus filters (App-First mode)    │
+│   a               Toggle AI on/off                  │
 │                                                       │
 │ Detail View:                                          │
 │   c                Copy keys to clipboard            │
@@ -1432,11 +1475,11 @@ App-First Mode                    Full-Phrase Mode
 │                                           │
 ├─ Select App (autocomplete)      ├─ Type query
 │  ↓                               │  ↓
-├─ Quick Search (/):               ├─ AI search (F4 toggle)
+├─ Quick Search (/):               ├─ AI search (a toggle)
 │  • Fuzzy filter results          │  ↓
 │  • Realtime filtering            ├─ Browse cross-app results
 │  ↓                               │  • Grouped by app
-├─ Filters (F3):                   │  • AI-ranked relevance
+├─ Filters (f):                   │  • AI-ranked relevance
 │  • Context dropdown              │  ↓
 │  • Category dropdown             └─ Select shortcut
 │  • Tags multi-select                 ↓
@@ -1673,17 +1716,17 @@ Since the same shortcuts should work in Web UI, document the canonical mapping:
 | Navigate Results | ↑↓ | ↑↓ or click | Move selection |
 | Select/Confirm | Enter | Enter or click | Confirm or view details |
 | Go Back | Esc | Esc | Back one level |
-| Change App | F2 | Cmd/Ctrl+K | Open app selector |
-| Focus Filters | F3 | Cmd/Ctrl+F | Jump to filters |
-| Toggle AI | F4 | Cmd/Ctrl+A | Turn AI on/off |
-| Platform | F5 or Cmd+P | Cmd/Ctrl+P | Select platform |
+| Change App | g | Cmd/Ctrl+K | Open app selector |
+| Focus Filters | f | Cmd/Ctrl+F | Jump to filters |
+| Toggle AI | a | Cmd/Ctrl+A | Turn AI on/off |
+| Platform | p or Cmd+P | Cmd/Ctrl+P | Select platform |
 | Settings | F6 or Cmd+, | Cmd/Ctrl+, | Open settings |
 | Help | ? | ? | Show keyboard shortcuts |
 | Copy Keys | c (detail view) | Cmd/Ctrl+C | Copy to clipboard |
 | Open Docs | o (detail view) | Cmd/Ctrl+O | Open in browser |
 | Quit | Ctrl+C or q | Cmd/Ctrl+W | Close/exit |
 
-**Note**: F-keys are TUI-specific. Web uses Cmd/Ctrl modifiers to avoid conflicts.
+**Note**: Vi-style keys (a, p, g, f, /) are consistent across TUI and Web. Web also supports Cmd/Ctrl modifiers to avoid conflicts with browser shortcuts.
 
 ---
 
@@ -1750,8 +1793,8 @@ web/
 - Two search modes: App-First and Full-Phrase (Tab to toggle)
 - Same keyboard shortcuts (adapted with Cmd/Ctrl modifiers)
 - Same filtering options (Context, Category, Tags)
-- Platform selector (F5 or Cmd+P)
-- AI toggle (F4 or Cmd+A)
+- Platform selector (p or Cmd+P)
+- AI toggle (a or Cmd+A)
 - Help overlay (? key)
 - Settings panel (Cmd+,)
 

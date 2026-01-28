@@ -122,6 +122,7 @@ Katasumi uses a hybrid approach:
 For detailed documentation, see:
 
 - **[API Documentation](docs/api/index.html)** - Complete TypeDoc-generated API reference for the core package
+- **[KEYBOARD_SHORTCUTS.md](KEYBOARD_SHORTCUTS.md)** - Comprehensive keyboard navigation guide and implementation details
 - [DEVELOPMENT_PRIORITIES.md](DEVELOPMENT_PRIORITIES.md) - Development roadmap and priorities
 - [katasumi-plan.md](katasumi-plan.md) - Detailed project planning
 
@@ -194,12 +195,12 @@ This script will:
 
 4. **Build and seed databases:**
    ```bash
-   npm run setup  # SQLite for TUI
+   npm run setup:tui  # SQLite for TUI
    
    # PostgreSQL for Web
    cd packages/core
-   DATABASE_URL="postgresql://katasumi:dev_password@localhost:5432/katasumi_dev" DB_TYPE="postgres" npm run migrate
-   DATABASE_URL="postgresql://katasumi:dev_password@localhost:5432/katasumi_dev" npm run seed
+   DATABASE_URL="postgres://katasumi:dev_password@localhost:5432/katasumi_dev" DB_TYPE="postgres" npm run migrate
+   DATABASE_URL="postgres://katasumi:dev_password@localhost:5432/katasumi_dev" npm run seed
    cd ../..
    ```
 

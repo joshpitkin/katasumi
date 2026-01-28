@@ -11,7 +11,7 @@
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "test": "turbo run test",
-    "setup": "npm run build && npm run migrate && npm run seed && npm run build-db",
+    "setup:tui": "npm run build && npm run migrate && npm run seed && npm run build-db",
     "start:tui": "npm start --workspace=@katasumi/tui",
     "start:web": "npm start --workspace=@katasumi/web",
     "migrate": "npm run migrate --workspace=@katasumi/core",

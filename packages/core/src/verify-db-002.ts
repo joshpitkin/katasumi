@@ -21,7 +21,7 @@ console.log('   This is verified at compile-time by TypeScript');
 console.log('\n✅ Test 2: PostgresAdapter can be instantiated');
 try {
   // Note: This will fail without a real database URL, but we're testing compilation and interface
-  const adapter: DatabaseAdapter = new PostgresAdapter('postgresql://user:password@localhost:5432/katasumi');
+  const adapter: DatabaseAdapter = new PostgresAdapter('postgres://user:password@localhost:5432/katasumi');
   console.log('   ✓ PostgresAdapter instantiated (would connect to real database)');
   console.log('   ✓ Implements all required methods:');
   console.log('      - searchShortcuts');

@@ -23,24 +23,42 @@ export class PostgresAdapter implements DatabaseAdapter {
       throw new Error('Core database URL is required');
     }
     
-    // Set environment variable for Prisma to pick up
-    process.env.DATABASE_URL = coreDbUrl;
+    // Normalize PostgreSQL URL scheme
+    if (coreDbUrl.startsWith('postgresql://')) {
+      coreDbUrl = coreDbUrl.replace('postgresql://', 'postgres://');
+    }
     
     try {
-      this.coreClient = new PrismaClientPostgres();
+      // Use pg adapter for PostgreSQL
+      const { Pool } = require('pg');
+      const { PrismaPg } = require('@prisma/adapter-pg');
+      
+      const corePool = new Pool({ connectionString: coreDbUrl });
+      const coreAdapter = new PrismaPg(corePool);
+      
+      this.coreClient = new PrismaClientPostgres({ adapter: coreAdapter });
     } catch (error) {
       throw new Error(`Failed to connect to core PostgreSQL database: ${error instanceof Error ? error.message : String(error)}`);
     }
     
     // If userDbUrl not provided, use the same connection
     if (userDbUrl) {
-      process.env.DATABASE_URL = userDbUrl;
+      // Normalize PostgreSQL URL scheme
+      if (userDbUrl.startsWith('postgresql://')) {
+        userDbUrl = userDbUrl.replace('postgresql://', 'postgres://');
+      }
+      
       try {
-        this.userClient = new PrismaClientPostgres();
+        const { Pool } = require('pg');
+        const { PrismaPg } = require('@prisma/adapter-pg');
+        
+        const userPool = new Pool({ connectionString: userDbUrl });
+        const userAdapter = new PrismaPg(userPool);
+        
+        this.userClient = new PrismaClientPostgres({ adapter: userAdapter });
       } catch (error) {
         throw new Error(`Failed to connect to user PostgreSQL database: ${error instanceof Error ? error.message : String(error)}`);
       }
-      process.env.DATABASE_URL = coreDbUrl; // Reset
     } else {
       this.userClient = this.coreClient;
     }
