@@ -1,8 +1,29 @@
 # Katasumi (隅) - Your Corner Companion for Keyboard Shortcuts
 
+[![Build Status](https://img.shields.io/github/actions/workflow/status/joshpitkin/katasumi/ci.yml?branch=main)](https://github.com/joshpitkin/katasumi/actions)
+[![Version](https://img.shields.io/npm/v/katasumi.svg)](https://www.npmjs.com/package/katasumi)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Downloads](https://img.shields.io/npm/dt/katasumi.svg)](https://www.npmjs.com/package/katasumi)
+
 **Katasumi** (カタスミ / 隅) - meaning "in the corner" - is an AI-powered keyboard shortcut discovery tool that stays quietly in the background, ready to help whenever you need it.
 
 Like a helpful friend waiting in the corner of your workspace, Katasumi provides instant access to keyboard shortcuts across terminal and desktop applications, supporting you without getting in the way.
+
+## 📑 Table of Contents
+
+- [Philosophy](#-philosophy)
+- [Features](#-features)
+- [Architecture](#️-architecture)
+- [Getting Started](#-getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation & Setup](#installation--setup)
+  - [Development Workflow](#development-workflow)
+  - [Testing & Running](#testing--running)
+- [Database Strategy](#-database-strategy)
+- [Documentation](#-documentation)
+- [Development](#️-development)
+- [Contributing](#-contributing)
+- [License](#-license)
 
 ## 🎯 Philosophy
 
@@ -66,6 +87,22 @@ katasumi/
 
 - Node.js 18+ and npm (or pnpm)
 - For development: The project uses Turborepo for monorepo management
+
+### Quick Install (TUI)
+
+Install Katasumi globally for instant access from any terminal:
+
+```bash
+npm install -g katasumi
+```
+
+Then launch it with:
+
+```bash
+katasumi
+```
+
+**Note:** Global installation is not yet available as the package has not been published to npm. For now, use the development installation method below.
 
 ### Installation & Setup
 
@@ -187,6 +224,8 @@ Katasumi uses a hybrid approach:
 
 ## 📚 Documentation
 
+For detailed documentation, see:
+
 - **[API Documentation](docs/api/index.html)** - Complete TypeDoc-generated API reference for the core package
 - [DEVELOPMENT_PRIORITIES.md](DEVELOPMENT_PRIORITIES.md) - Development roadmap and priorities
 - [katasumi-plan.md](katasumi-plan.md) - Detailed project planning
@@ -195,13 +234,69 @@ Katasumi uses a hybrid approach:
 
 This project is currently in early development. See the documentation links above for more details.
 
-## 📝 License
+### Running Tests
 
-TBD
+```bash
+# Run all tests
+npm test
+
+# Run tests for specific package
+npm test --workspace=@katasumi/core
+npm test --workspace=@katasumi/tui
+npm test --workspace=@katasumi/web
+```
+
+### Type Checking
+
+```bash
+# Type check all packages
+npm run typecheck
+
+# Type check specific package
+npm run typecheck --workspace=@katasumi/core
+```
 
 ## 🤝 Contributing
 
-Contributions welcome! More details coming soon.
+We welcome contributions! Here's how you can help:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes and commit (`git commit -m 'Add amazing feature'`)
+4. Push to your branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+Please ensure:
+- All tests pass (`npm test`)
+- Code is properly typed (`npm run typecheck`)
+- Follow the existing code style
+- Add tests for new features
+
+For major changes, please open an issue first to discuss what you would like to change.
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+Copyright (c) 2026 Josh Pitkin
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 ---
 
