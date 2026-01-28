@@ -6,7 +6,7 @@ import type { Platform } from '@katasumi/core/dist/types'
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
-    const query = searchParams.get('query') || ''
+    const query = searchParams.get('q') || searchParams.get('query') || ''
     const app = searchParams.get('app') || undefined
     const platform = searchParams.get('platform') as Platform | undefined
     const category = searchParams.get('category') || undefined

@@ -1522,3 +1522,90 @@ Implemented Full-Phrase search mode UI with natural language input and cross-app
 - ✓ Related shortcuts clickable (opens their detail modals)
 
 **Task Status:** Complete ✅
+
+================================================================================
+Date: 2026-01-27T23:59:00Z
+Task: PHASE3-WEB-008 - Implement Next.js API routes for search, AI, and sync operations
+Status: ✅ COMPLETE
+================================================================================
+
+Implementation Summary:
+-----------------------
+Successfully implemented all required API routes with authentication, rate limiting,
+and comprehensive error handling.
+
+Key Achievements:
+-----------------
+1. ✅ GET /api/search endpoint
+   - Supports both `q` and `query` parameters for backward compatibility
+   - Filters by app, platform, category, and tag
+   - Returns JSON with results array
+   - Proper error handling
+
+2. ✅ POST /api/ai endpoint (NEW)
+   - Natural language AI-enhanced search
+   - Integrates AISearchEngine from @katasumi/core
+   - Requires authentication (JWT)
+   - Rate limiting: 5 queries/day for free users, unlimited for pro
+   - Returns 429 with helpful error when limit reached
+   - Falls back to keyword search if AI provider unavailable
+
+3. ✅ Rate Limiting Implementation
+   - Added AiUsage model to Prisma schema
+   - Tracks userId, query, and timestamp
+   - Indexed for efficient queries
+   - Checks daily usage count per user
+   - Helpful error messages with limit/used counts
+
+4. ✅ Sync Endpoints (verified existing)
+   - GET /api/sync/pull - requires auth, supports ?since= parameter
+   - POST /api/sync/push - requires auth, upserts shortcuts
+   - JWT token verification on all endpoints
+   - Returns 401 for missing/invalid tokens
+
+5. ✅ Error Handling
+   - Comprehensive error messages
+   - Proper HTTP status codes (200, 400, 401, 404, 429, 500, 503)
+   - Authentication errors clearly communicated
+   - Validation errors specify requirements
+
+Database Changes:
+-----------------
+- Added AiUsage model to schema.postgres.prisma
+- Generated Prisma clients for both SQLite and PostgreSQL
+- Indexed for query performance
+
+Testing:
+--------
+- Created 6 new tests for AI endpoint
+- All 25 tests passing (4 test files)
+- Test coverage includes:
+  * Authentication requirements
+  * Rate limiting enforcement
+  * Valid request handling
+  * Parameter validation
+  * Error handling
+  * Filter functionality
+
+Files Modified/Created:
+-----------------------
+- packages/web/app/api/ai/route.ts (NEW)
+- packages/web/app/api/search/route.ts (UPDATED)
+- packages/core/prisma/schema.postgres.prisma (UPDATED)
+- packages/web/prisma/schema.prisma (UPDATED)
+- packages/web/__tests__/ai-search.test.ts (NEW)
+- packages/web/verify-phase3-web-008.mjs (NEW)
+
+Verification:
+-------------
+ All tests pass (25/25)
+ Type checking passes
+ Build successful
+ All acceptance criteria met
+
+Next Steps:
+-----------
+- Task complete, ready for next PRD item
+- Consider adding Redis/KV caching for API responses (future enhancement)
+- Consider adding API metrics/monitoring (future enhancement)
+

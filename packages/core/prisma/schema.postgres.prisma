@@ -70,6 +70,7 @@ model User {
   userShortcuts  UserShortcut[]
   collections    Collection[]
   syncLogs       SyncLog[]
+  aiUsage        AiUsage[]
   
   @@index([email])
   @@index([tier])
@@ -163,4 +164,18 @@ model SyncLog {
   @@index([userId])
   @@index([createdAt])
   @@map("sync_logs")
+}
+
+// AiUsage table - tracks AI query usage for rate limiting
+model AiUsage {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  query     String   // The search query that was made
+  timestamp DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([timestamp])
+  @@map("ai_usage")
 }
