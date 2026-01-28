@@ -15,14 +15,14 @@ Like a helpful friend waiting in the corner of your workspace, Katasumi provides
 - [Features](#-features)
 - [Architecture](#️-architecture)
 - [Getting Started](#-getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation & Setup](#installation--setup)
-  - [Development Workflow](#development-workflow)
-  - [Testing & Running](#testing--running)
+  - [Quick Install (TUI)](#quick-install-tui)
 - [Database Strategy](#-database-strategy)
 - [Documentation](#-documentation)
 - [Development](#️-development)
 - [Contributing](#-contributing)
+  - [Development Environment Setup](#development-environment-setup)
+  - [Development Workflow](#development-workflow)
+  - [Testing & Running](#testing--running)
 - [License](#-license)
 
 ## 🎯 Philosophy
@@ -83,11 +83,6 @@ katasumi/
 
 ## 🚀 Getting Started
 
-### Prerequisites
-
-- Node.js 18+ and npm (or pnpm)
-- For development: The project uses Turborepo for monorepo management
-
 ### Quick Install (TUI)
 
 Install Katasumi globally for instant access from any terminal:
@@ -102,107 +97,7 @@ Then launch it with:
 katasumi
 ```
 
-**Note:** Global installation is not yet available as the package has not been published to npm. For now, use the development installation method below.
-
-### Installation & Setup
-
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/joshpitkin/katasumi.git
-   cd katasumi
-   ```
-
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-
-3. **Run first-time setup:**
-   ```bash
-   npm run setup
-   ```
-   
-   This step:
-   - Generates Prisma clients and compiles TypeScript
-   - Runs database migrations
-   - Seeds the database with 770+ shortcuts across 8 popular apps
-   - Builds the bundled shortcuts.db for the TUI
-   
-   This is required before running `npm run dev` for the first time.
-
-4. **Start development servers:**
-   
-   **Run all packages in parallel (recommended):**
-   ```bash
-   npm run dev
-   ```
-   This starts both TUI and Web development servers simultaneously.
-
-   **Run TUI only:**
-   ```bash
-   npm run dev --workspace=@katasumi/tui
-   ```
-   The TUI (Terminal User Interface) will watch for file changes and recompile automatically.
-
-   **Run Web only:**
-   ```bash
-   npm run dev --workspace=@katasumi/web
-   ```
-   The web development server will start at http://localhost:3000 with hot reload enabled.
-
-### Development Workflow
-
-**Working on the TUI:**
-- Changes to `packages/tui/src/**` will auto-recompile via TypeScript watch mode
-- Changes to `packages/core/src/**` require rebuilding core: `npm run build --workspace=@katasumi/core`
-- Test the TUI interactively by running: `npm run start:tui`
-- Or use the workspace command: `npm start --workspace=@katasumi/tui`
-
-**Working on the Web app:**
-- Changes to `packages/web/**` will hot-reload automatically via Next.js Fast Refresh
-- Changes to `packages/core/src/**` require rebuilding core: `npm run build --workspace=@katasumi/core`
-- Access the web app at http://localhost:3000
-- Check the browser console for any runtime errors
-
-**Working on Core:**
-- After modifying `packages/core/src/**`, run:
-  ```bash
-  npm run build --workspace=@katasumi/core
-  ```
-- This regenerates Prisma clients and compiles TypeScript
-- Both TUI and Web will pick up the changes on their next rebuild/reload
-
-### Testing & Running
-
-**Run the TUI interactively:**
-```bash
-npm run start:tui
-```
-
-**Run the Web app:**
-```bash
-npm run start:web
-```
-Then visit http://localhost:3000
-
-**Note:** Make sure to run `npm run setup` first if you haven't already. The TUI requires the database to be seeded and the bundled shortcuts.db to be built.
-
-### First-Time Setup Notes
-
-The setup step is crucial on first setup as it:
-- Generates Prisma clients for both SQLite and PostgreSQL
-- Compiles TypeScript to ensure type definitions are available
-- Creates necessary generated files in the `packages/core/src/generated` directory
-- Runs database migrations to create the schema
-- Seeds the database with curated shortcuts for 8 popular applications
-- Builds the bundled shortcuts.db file that ships with the TUI
-
-If you encounter type errors when running `npm run dev`, make sure you've run `npm run setup` first.
-
-**Note:** After the initial setup, you typically only need `npm run build` when:
-- Prisma schema files are modified
-- You pull changes that affect the core package
-- You want to rebuild without re-seeding the database
+**Note:** Global installation is not yet available as the package has not been published to npm. For development and contribution setup, see the [Contributing](#-contributing) section below.
 
 ### Running Unobtrusively
 
@@ -232,47 +127,153 @@ For detailed documentation, see:
 
 ## 🛠️ Development
 
-This project is currently in early development. See the documentation links above for more details.
+This project is currently in early development. We use a monorepo structure with Turborepo for efficient builds and development.
 
-### Running Tests
+### Tech Stack
 
-```bash
-# Run all tests
-npm test
-
-# Run tests for specific package
-npm test --workspace=@katasumi/core
-npm test --workspace=@katasumi/tui
-npm test --workspace=@katasumi/web
-```
-
-### Type Checking
-
-```bash
-# Type check all packages
-npm run typecheck
-
-# Type check specific package
-npm run typecheck --workspace=@katasumi/core
-```
+- **TypeScript** - Type-safe code across all packages
+- **Prisma** - Database ORM with SQLite and PostgreSQL support
+- **Ink** - React for terminal UIs (TUI)
+- **Next.js** - React framework for web application
+- **Turborepo** - Monorepo build system
 
 ## 🤝 Contributing
 
-We welcome contributions! Here's how you can help:
+We welcome contributions from developers of all skill levels! Whether you're fixing a bug, adding a feature, improving documentation, or suggesting ideas, your help is appreciated.
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes and commit (`git commit -m 'Add amazing feature'`)
-4. Push to your branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+**Quick Links:**
+- [CONTRIBUTING.md](CONTRIBUTING.md) - Comprehensive contribution guide
+- [DEVELOPMENT.md](DEVELOPMENT.md) - Detailed development setup and troubleshooting
+- [GitHub Issues](https://github.com/joshpitkin/katasumi/issues) - Report bugs or request features
+- [GitHub Discussions](https://github.com/joshpitkin/katasumi/discussions) - Ask questions and share ideas
 
-Please ensure:
-- All tests pass (`npm test`)
-- Code is properly typed (`npm run typecheck`)
-- Follow the existing code style
-- Add tests for new features
+### Development Environment Setup
 
-For major changes, please open an issue first to discuss what you would like to change.
+#### Prerequisites
+
+- Node.js 18+ and npm (or pnpm)
+- Docker and Docker Compose (recommended)
+- OR PostgreSQL 14+ (if not using Docker)
+
+#### Quick Setup (Automated)
+
+For the fastest setup, use our automated script:
+
+```bash
+git clone https://github.com/joshpitkin/katasumi.git
+cd katasumi
+./quick-setup.sh
+```
+
+This script will:
+- Start PostgreSQL via Docker (if available)
+- Copy environment configuration files
+- Install dependencies
+- Build and seed both SQLite (TUI) and PostgreSQL (Web) databases
+
+#### Manual Setup
+
+1. **Clone and install:**
+   ```bash
+   git clone https://github.com/joshpitkin/katasumi.git
+   cd katasumi
+   npm install
+   ```
+
+2. **Start PostgreSQL:**
+   ```bash
+   docker-compose up -d  # Using Docker
+   # OR see DEVELOPMENT.md for manual PostgreSQL installation
+   ```
+
+3. **Configure environment:**
+   ```bash
+   cp packages/core/.env.example packages/core/.env
+   cp packages/web/.env.example packages/web/.env.local
+   ```
+
+4. **Build and seed databases:**
+   ```bash
+   npm run setup  # SQLite for TUI
+   
+   # PostgreSQL for Web
+   cd packages/core
+   DATABASE_URL="postgresql://katasumi:dev_password@localhost:5432/katasumi_dev" DB_TYPE="postgres" npm run migrate
+   DATABASE_URL="postgresql://katasumi:dev_password@localhost:5432/katasumi_dev" npm run seed
+   cd ../..
+   ```
+
+5. **Start development:**
+   ```bash
+   npm run dev  # Starts both TUI and Web
+   ```
+
+For detailed instructions and troubleshooting, see [DEVELOPMENT.md](DEVELOPMENT.md).
+
+### Development Workflow
+
+**Working on different packages:**
+
+```bash
+# Core package (shared logic)
+npm run build --workspace=@katasumi/core
+
+# TUI (terminal interface)
+npm run dev --workspace=@katasumi/tui
+npm run start:tui  # Test the TUI
+
+# Web (Next.js app)
+npm run dev --workspace=@katasumi/web
+# Visit http://localhost:3000
+```
+
+**Database operations:**
+
+```bash
+npm run migrate:status      # Check migration status
+npm run migrate:rollback    # Rollback last migration
+npm run seed                # Re-seed database
+npm run build-db            # Rebuild TUI database
+```
+
+### Testing & Running
+
+**Run tests:**
+```bash
+npm test                              # All tests
+npm test --workspace=@katasumi/core  # Specific package
+npm test -- --watch                   # Watch mode
+```
+
+**Type checking:**
+```bash
+npm run typecheck                         # All packages
+npm run typecheck --workspace=@katasumi/core  # Specific package
+```
+
+**Test applications:**
+```bash
+npm run start:tui   # Test TUI interactively
+npm run start:web   # Start web app (http://localhost:3000)
+```
+
+### How to Contribute
+
+1. **Fork** the repository to your GitHub account
+2. **Clone** your fork locally
+3. **Create a branch** for your changes: `git checkout -b feature/my-feature`
+4. **Make your changes** with clear, atomic commits
+5. **Test thoroughly** - run `npm test` and `npm run typecheck`
+6. **Push** to your fork: `git push origin feature/my-feature`
+7. **Open a Pull Request** with a clear description
+
+**Before submitting:**
+- ✅ All tests pass (`npm test`)
+- ✅ Code is properly typed (`npm run typecheck`)
+- ✅ Documentation is updated if needed
+- ✅ Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/)
+
+For more details, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## 📝 License
 
