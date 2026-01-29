@@ -106,8 +106,8 @@ export class PostgresAdapter implements DatabaseAdapter {
 
     // Convert to Shortcut type
     const results = [
-      ...coreShortcuts.map(this.convertToShortcut),
-      ...userShortcuts.map(this.convertUserShortcutToShortcut),
+      ...coreShortcuts.map(s => this.convertToShortcut(s)),
+      ...userShortcuts.map(s => this.convertUserShortcutToShortcut(s)),
     ];
 
     return results.slice(0, limit);

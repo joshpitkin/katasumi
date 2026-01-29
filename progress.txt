@@ -1774,3 +1774,50 @@ Type checks: Build successful
 
 **Result:** Vi-style keyboard shortcuts fully implemented and consistent across TUI and Web UI. F-keys eliminated. Home row navigation working correctly with proper input field handling.
 
+
+## 2026-01-29 - PHASE3-WEB-012: E2E Tests for Web UI Core Flows
+
+**Task:** Implement end-to-end tests for core web UI flows that verify API routes work correctly with PostgreSQL database.
+
+**Implementation Details:**
+- Installed Playwright for E2E testing (@playwright/test)
+- Created comprehensive E2E test suite in `packages/web/e2e/core-flows.spec.ts`
+- Implemented 13 E2E tests covering:
+  * Database connection verification
+  * Search flow with /api/search endpoint (PostgreSQL queries)
+  * App selector API (/api/apps) returning database results
+  * Detail view displaying database fields
+  * AI search endpoint functionality
+  * Platform filtering with database queries
+  * Error handling with user-friendly messages
+  * Verification that PostgresAdapter is used (not SQLite/mocks)
+  * Multiple filter combinations querying database correctly
+
+**Key Files:**
+- `packages/web/e2e/core-flows.spec.ts` - Main E2E test suite
+- `packages/web/e2e/helpers.ts` - Test helper functions
+- `packages/web/playwright.config.ts` - Playwright configuration
+- `packages/web/package.json` - Added test:e2e scripts
+- `packages/web/vitest.config.ts` - Excluded e2e from unit tests
+- `packages/core/src/postgres-adapter.ts` - Fixed method binding issue
+
+**Bug Fixed:**
+- Fixed PostgresAdapter method binding issue where `this.convertSourceType` was undefined when using `.map(this.method)`. Changed to use arrow functions: `.map(s => this.method(s))`
+
+**Database Setup:**
+- Started local PostgreSQL service
+- Created `katasumi_dev` database with user `katasumi`
+- Ran migrations and seeded test data (770 shortcuts across 8 apps)
+
+**Test Results:**
+- ✅ All 13 E2E tests passing
+- ✅ All 25 unit tests passing
+- ✅ TypeScript type checks passing
+- Test execution time: ~34 seconds for E2E suite
+
+**Commands Added:**
+- `npm run test:e2e` - Run E2E tests
+- `npm run test:e2e:ui` - Run E2E tests with UI
+- `npm run test:e2e:headed` - Run E2E tests in headed mode
+
+**Status:** ✅ COMPLETE - All acceptance criteria met. E2E tests verify real PostgreSQL database queries through API routes.
