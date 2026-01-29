@@ -21,19 +21,19 @@ export function HelpOverlay({ onClose }: HelpOverlayProps) {
         <Text bold>Global:</Text>
         <Text>  Ctrl+C / q       Quit</Text>
         <Text>  ?                Show this help</Text>
-        <Text>  F5               Platform selector</Text>
+        <Text>  a                Toggle AI</Text>
+        <Text>  p                Platform selector</Text>
         <Text dimColor />
         <Text bold>Navigation:</Text>
+        <Text>  /                Focus search</Text>
         <Text>  ↑↓               Navigate results</Text>
         <Text>  Enter            Select / Show details</Text>
-        <Text>  Esc              Back / Close</Text>
-        <Text>  / or type        Focus search</Text>
+        <Text>  Esc              Back / Close / Unfocus</Text>
         <Text dimColor />
         <Text bold>Search Modes:</Text>
         <Text>  Tab              Toggle App-First ↔ Full-Phrase</Text>
-        <Text>  F2               Change app (App-First mode)</Text>
-        <Text>  F3               Focus filters (App-First mode)</Text>
-        <Text>  F4               Toggle AI on/off</Text>
+        <Text>  g                Go to app selector (App-First)</Text>
+        <Text>  f                Focus filters (App-First)</Text>
         <Text dimColor />
         <Text bold>Detail View:</Text>
         <Text>  c                Copy keys to clipboard</Text>

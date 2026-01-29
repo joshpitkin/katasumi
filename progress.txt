@@ -1698,3 +1698,79 @@ All acceptance criteria met:
 
 Tests: All 25 tests passing
 Type checks: Build successful
+
+---
+## 2026-01-29 00:03 UTC - PHASE4-WEB-014: Vi-Style Keyboard Shortcuts
+
+**Task:** Standardize keyboard shortcuts across TUI and Web UI using vi-style home row keys, eliminating F-keys for better accessibility and consistency
+
+**Changes Made:**
+
+### TUI Updates:
+1. **GlobalKeybindings.tsx**
+   - Removed F-key handlers (F4, F5) and process.stdin keypress event listener
+   - Added vi-style shortcuts: 'a' for Toggle AI, 'p' for Platform selector
+   - Simplified to use only Ink's useInput hook
+
+2. **HelpOverlay.tsx**
+   - Updated help text to show new shortcuts (a, p, g, f)
+   - Removed F-key references (F2, F3, F4, F5)
+   - Added '/' for Focus search
+
+3. **Footer.tsx**
+   - Updated footer to show: [a] Toggle AI, [p] Platform
+   - Added [g] Go to App, [f] Filters for App-First mode
+   - Removed F-key references
+
+4. **AppFirstMode.tsx**
+   - Removed F2/F3 keypress handlers
+   - Added 'g' shortcut to go to app selector
+   - Added 'f' shortcut to focus filters
+   - Uses useInput hook for cleaner implementation
+
+### Web UI Updates:
+1. **page.tsx**
+   - Added comprehensive input field detection (instanceof HTMLInputElement/HTMLTextAreaElement)
+   - Implemented Escape to unfocus input without clearing (preserves query)
+   - Implemented Ctrl+L to clear input and keep focus
+   - Added vi-style shortcuts: 'a' for Toggle AI, 'p' for Platform selector
+   - Added proper isTyping checks to block single-key shortcuts during text entry
+   - Special handling for '/' to focus search from anywhere
+   - Modifier shortcuts (Ctrl+A, Ctrl+P) work even in inputs
+
+2. **AppFirstMode.tsx**
+   - Added 'g' shortcut to go to app selector
+   - Added 'f' shortcut to focus filters
+   - Added isTyping check to prevent shortcuts during text entry
+
+3. **SearchBar.tsx**
+   - Added onKeyDown handler for Enter key
+   - Unfocuses input after Enter (setTimeout) so users can navigate results with shortcuts
+
+4. **HelpOverlay.tsx**
+   - Completely restructured help sections
+   - Added "Search & Navigation" section with input field behaviors
+   - Added "App-First Mode" section with g/f shortcuts
+   - Updated all shortcuts to show vi-style keys (a, p)
+   - Removed F-key references (F2, F3, F4, F5, Cmd+F)
+
+5. **Footer.tsx**
+   - Updated to show: [a] Toggle AI, [p] Platform, [g] Go to App
+   - Removed F-key references
+
+**Key Implementation Details:**
+- Input field handling prevents shortcuts from triggering during text entry
+- Escape behavior: unfocuses input WITHOUT clearing query (users can keep their search)
+- Ctrl+L behavior: clears input and KEEPS focus (standard browser behavior)
+- Enter behavior: executes search and unfocuses (users can navigate results)
+- '/' always focuses search unless already typing
+- Single-key shortcuts (a, p, g, f) only work when NOT typing
+- Modifier shortcuts (Ctrl+A, Ctrl+P) work everywhere
+
+**Testing:**
+- All 90 tests passing (65 TUI + 25 Web)
+- Build successful for all packages
+- Type checking complete
+
+**Result:** Vi-style keyboard shortcuts fully implemented and consistent across TUI and Web UI. F-keys eliminated. Home row navigation working correctly with proper input field handling.
+

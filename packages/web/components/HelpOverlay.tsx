@@ -36,35 +36,15 @@ export function HelpOverlay() {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-gray-700 dark:text-gray-300">Toggle AI</span>
-                <div className="flex gap-2">
-                  <kbd className="kbd">Cmd+A</kbd>
-                  <span className="text-gray-500">or</span>
-                  <kbd className="kbd">Ctrl+A</kbd>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-700 dark:text-gray-300">Open App Selector</span>
-                <div className="flex gap-2">
-                  <kbd className="kbd">Cmd+K</kbd>
-                  <span className="text-gray-500">or</span>
-                  <kbd className="kbd">Ctrl+K</kbd>
-                </div>
+                <kbd className="kbd">a</kbd>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-gray-700 dark:text-gray-300">Platform Selector</span>
-                <div className="flex gap-2">
-                  <kbd className="kbd">Cmd+P</kbd>
-                  <span className="text-gray-500">or</span>
-                  <kbd className="kbd">Ctrl+P</kbd>
-                </div>
+                <kbd className="kbd">p</kbd>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-gray-700 dark:text-gray-300">Focus Filters</span>
-                <div className="flex gap-2">
-                  <kbd className="kbd">Cmd+F</kbd>
-                  <span className="text-gray-500">or</span>
-                  <kbd className="kbd">Ctrl+F</kbd>
-                </div>
+                <span className="text-gray-700 dark:text-gray-300">Keyboard Shortcuts Help</span>
+                <kbd className="kbd">?</kbd>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-gray-700 dark:text-gray-300">Settings</span>
@@ -75,10 +55,6 @@ export function HelpOverlay() {
                 </div>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-gray-700 dark:text-gray-300">Keyboard Shortcuts Help</span>
-                <kbd className="kbd">?</kbd>
-              </div>
-              <div className="flex items-center justify-between">
                 <span className="text-gray-700 dark:text-gray-300">Close Modal/Overlay</span>
                 <kbd className="kbd">Esc</kbd>
               </div>
@@ -87,12 +63,24 @@ export function HelpOverlay() {
 
           <section>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-              Navigation
+              Search & Navigation
             </h3>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-gray-700 dark:text-gray-300">Focus Search Input</span>
                 <kbd className="kbd">/</kbd>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-700 dark:text-gray-300">Execute Search (and unfocus)</span>
+                <kbd className="kbd">Enter</kbd>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-700 dark:text-gray-300">Unfocus Input (keep query)</span>
+                <kbd className="kbd">Esc</kbd>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-700 dark:text-gray-300">Clear Input (stay focused)</span>
+                <kbd className="kbd">Ctrl+L</kbd>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-gray-700 dark:text-gray-300">Navigate Results Up/Down</span>
@@ -104,6 +92,30 @@ export function HelpOverlay() {
               <div className="flex items-center justify-between">
                 <span className="text-gray-700 dark:text-gray-300">Open Selected Result Detail</span>
                 <kbd className="kbd">Enter</kbd>
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+              App-First Mode
+            </h3>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-gray-700 dark:text-gray-300">Go to App Selector</span>
+                <kbd className="kbd">g</kbd>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-700 dark:text-gray-300">Focus Filters</span>
+                <kbd className="kbd">f</kbd>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-700 dark:text-gray-300">Open App Selector</span>
+                <div className="flex gap-2">
+                  <kbd className="kbd">Cmd+K</kbd>
+                  <span className="text-gray-500">or</span>
+                  <kbd className="kbd">Ctrl+K</kbd>
+                </div>
               </div>
             </div>
           </section>

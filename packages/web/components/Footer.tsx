@@ -9,16 +9,16 @@ export function Footer() {
             <kbd className="kbd">Tab</kbd> Toggle Mode
           </span>
           <span>
-            <kbd className="kbd">F4</kbd> Toggle AI
+            <kbd className="kbd">a</kbd> Toggle AI
           </span>
           <span>
-            <kbd className="kbd">F5</kbd> Platform
+            <kbd className="kbd">p</kbd> Platform
+          </span>
+          <span>
+            <kbd className="kbd">g</kbd> Go to App
           </span>
           <span>
             <kbd className="kbd">?</kbd> Help
-          </span>
-          <span>
-            <kbd className="kbd">Cmd+,</kbd> Settings
           </span>
         </div>
       </div>

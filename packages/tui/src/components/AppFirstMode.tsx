@@ -146,36 +146,22 @@ export function AppFirstMode({ selectedApp, view }: AppFirstModeProps) {
     loadShortcuts();
   }, [selectedApp, setResults]);
 
-  // Handle F2/F3 navigation
-  useEffect(() => {
-    const handleKeypress = (str: string, key: any) => {
-      if (key && key.name === 'f2' && selectedApp) {
-        // F2: Return to app selector
-        selectApp(null);
-        setAppQuery('');
-        setQuickSearchQuery('');
-        setFocusSection('app-selector');
-      } else if (key && key.name === 'f3' && selectedApp) {
-        // F3: Focus filters bar
-        setFocusSection('filters');
-      }
-    };
-
-    if (process.stdin.isTTY) {
-      process.stdin.on('keypress', handleKeypress);
-      return () => {
-        process.stdin.removeListener('keypress', handleKeypress);
-      };
-    }
-  }, [selectedApp, selectApp, setAppQuery, setQuickSearchQuery, setFocusSection]);
-
-  // Handle Escape to return to app selector
+  // Handle g/f navigation (vi-style shortcuts)
   useInput((input, key) => {
     if (key.escape && selectedApp) {
       selectApp(null);
       setAppQuery('');
       setQuickSearchQuery('');
       setFocusSection('app-selector');
+    } else if (input === 'g' && selectedApp) {
+      // g: Go to app selector (return to app selection)
+      selectApp(null);
+      setAppQuery('');
+      setQuickSearchQuery('');
+      setFocusSection('app-selector');
+    } else if (input === 'f' && selectedApp) {
+      // f: Focus filters bar
+      setFocusSection('filters');
     }
   });
 

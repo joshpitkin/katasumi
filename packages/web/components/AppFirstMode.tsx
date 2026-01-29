@@ -17,24 +17,38 @@ export function AppFirstMode() {
   // Keyboard shortcuts
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      // Tab: Toggle mode
-      if (e.key === 'Tab' && !e.shiftKey && mode === 'app-first') {
+      // Check if typing in input
+      const target = e.target as HTMLElement
+      const isTyping = target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement
+      
+      // Tab: Toggle mode (handled globally in page.tsx)
+      
+      // g - Go to app selector (vi-style, only when not typing)
+      if (e.key === 'g' && !isTyping && selectedApp) {
         e.preventDefault()
-        toggleMode()
+        useStore.setState({ selectedApp: null, query: '', results: [], selectedShortcut: null })
+        return
       }
       
-      // Cmd+K (Mac) or Ctrl+K (Windows/Linux): Change app
+      // f - Focus filters (vi-style, only when not typing)
+      if (e.key === 'f' && !isTyping && selectedApp) {
+        e.preventDefault()
+        // Focus the first filter input/select element
+        const filterElement = document.querySelector('.filters-container input, .filters-container select') as HTMLElement
+        filterElement?.focus()
+        return
+      }
+      
+      // Cmd+K (Mac) or Ctrl+K (Windows/Linux): Change app (also works)
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault()
         useStore.setState({ selectedApp: null, query: '', results: [], selectedShortcut: null })
+        return
       }
       
-      // Cmd+F (Mac) or Ctrl+F (Windows/Linux): Focus filters (handled by browser default)
-      // We'll let the browser handle this naturally
-      
-      // Escape: Clear selection
+      // Escape: Clear selection (handled globally, but we can also handle it here)
       if (e.key === 'Escape') {
-        if (selectedApp) {
+        if (selectedApp && !isTyping) {
           useStore.setState({ selectedApp: null, query: '', results: [] })
         }
       }

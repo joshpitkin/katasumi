@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useInput } from 'ink';
 
 interface GlobalKeybindingsProps {
@@ -31,29 +31,16 @@ export function GlobalKeybindings({
     else if (key.tab) {
       onToggleMode();
     }
-    // Platform selector on Cmd+P (meta+p)
-    else if (key.meta && input === 'p') {
+    // Vi-style shortcuts (home row keys)
+    // a - Toggle AI
+    else if (input === 'a') {
+      onToggleAI();
+    }
+    // p - Platform selector
+    else if (input === 'p') {
       onShowPlatformSelector();
     }
   });
-
-  // Handle F-keys via process stdin
-  useEffect(() => {
-    const handleKeypress = (str: string, key: any) => {
-      if (key && key.name === 'f4') {
-        onToggleAI();
-      } else if (key && key.name === 'f5') {
-        onShowPlatformSelector();
-      }
-    };
-
-    if (process.stdin.isTTY) {
-      process.stdin.on('keypress', handleKeypress);
-      return () => {
-        process.stdin.removeListener('keypress', handleKeypress);
-      };
-    }
-  }, [onToggleAI, onShowPlatformSelector]);
 
   return null;
 }

@@ -6,11 +6,11 @@ interface FooterProps {
 }
 
 export function Footer({ mode }: FooterProps) {
-  const commonShortcuts = '[Ctrl+C] Quit | [?] Help | [Tab] Switch Mode | [F4] Toggle AI';
+  const commonShortcuts = '[Ctrl+C] Quit | [?] Help | [Tab] Switch Mode | [a] Toggle AI | [p] Platform';
   const modeSpecific =
     mode === 'app-first'
-      ? ' | [F2] Change App | [F3] Filters'
-      : ' | [F5] Platform';
+      ? ' | [g] Go to App | [f] Filters'
+      : '';
 
   return (
     <Box borderStyle="single" borderColor="gray" paddingX={1} marginTop={1}>
