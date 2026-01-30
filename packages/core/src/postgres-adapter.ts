@@ -75,17 +75,17 @@ export class PostgresAdapter implements DatabaseAdapter {
     try {
       // Build where clause
       const where: any = {};
-    if (app) where.app = app;
-    if (category) where.category = category;
-    if (query) {
-      where.OR = [
-        { action: { contains: query, mode: 'insensitive' } },
-        { tags: { contains: query, mode: 'insensitive' } },
-      ];
-    }
-    if (tag) {
-      where.tags = { contains: tag, mode: 'insensitive' };
-    }
+      if (app) where.app = app;
+      if (category) where.category = category;
+      if (query) {
+        where.OR = [
+          { action: { contains: query, mode: 'insensitive' } },
+          { tags: { contains: query, mode: 'insensitive' } },
+        ];
+      }
+      if (tag) {
+        where.tags = { contains: tag, mode: 'insensitive' };
+      }
 
     // Query core database
     const coreShortcuts = await this.coreClient.shortcut.findMany({

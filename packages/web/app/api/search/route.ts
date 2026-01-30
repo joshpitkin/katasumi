@@ -14,6 +14,9 @@ export async function GET(request: NextRequest) {
     const tag = searchParams.get('tag') || undefined
     const limit = parseInt(searchParams.get('limit') || '50')
 
+    // Log search parameters for debugging
+    console.log('[API /api/search] Request params:', { query, app, platform, context, category, tag, limit })
+
     // Initialize database adapter and search engine
     const dbUrl = process.env.DATABASE_URL || 'postgres://user:password@localhost:5432/katasumi'
     const adapter = new PostgresAdapter(dbUrl)
@@ -30,6 +33,8 @@ export async function GET(request: NextRequest) {
       limit
     )
 
+    console.log('[API /api/search] Search results count:', results.length)
+
     // Filter by context and tag if specified (not directly supported in fuzzySearch filters)
     let filteredResults = results
     if (context) {
@@ -41,6 +46,13 @@ export async function GET(request: NextRequest) {
       filteredResults = filteredResults.filter(shortcut =>
         shortcut.tags.some(t => t.toLowerCase().includes(tag.toLowerCase()))
       )
+    }
+
+    console.log('[API /api/search] Filtered results count:', filteredResults.length)
+
+    // Log helpful message if no results found
+    if (filteredResults.length === 0 && app) {
+      console.warn(`[API /api/search] No shortcuts found for app: ${app}`)
     }
 
     return NextResponse.json({ results: filteredResults })

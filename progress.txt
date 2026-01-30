@@ -2359,3 +2359,47 @@ STATUS: COMPLETE ✅
 The app selector now supports full keyboard navigation, making App-First mode 
 fully usable for keyboard-first users. The fix addresses the critical UX bug 
 where users couldn't select apps using keyboard after filtering.
+
+## 2026-01-30 - PHASE3-WEB-019: Fixed App-First Search Bug
+
+### Issue
+App-First mode search was potentially returning empty results due to code formatting issues and lack of debugging visibility.
+
+### Changes Made
+1. **Fixed postgres-adapter.ts** (packages/core/src/postgres-adapter.ts):
+   - Corrected indentation of WHERE clause conditions in searchShortcuts method
+   - Ensured app, category, and tag filters are properly included in the database query
+
+2. **Added API Logging** (packages/web/app/api/search/route.ts):
+   - Added console.log for request parameters (query, app, platform, context, category, tag, limit)
+   - Added console.log for search results count
+   - Added console.log for filtered results count
+   - Added console.warn when no shortcuts found for specific app
+
+3. **Added Client-Side Logging** (packages/web/components/SearchBar.tsx):
+   - Added console.log for search parameters being sent to API
+   - Added console.log for response data (results count, errors)
+   - Added console.error for API errors
+   - Added console.warn when no shortcuts found in app-first mode
+
+4. **Enhanced Empty State Message** (packages/web/components/ResultsList.tsx):
+   - Updated empty results message to show specific app name in app-first mode
+   - Message now reads: "No shortcuts found for {app}. Try a different search term."
+   - Generic message for full-phrase mode remains: "No shortcuts found. Try a different search."
+
+### Testing
+- All core tests pass (110 tests)
+- All web tests pass (62 tests)
+- Linting passes with no errors
+- Build completes successfully
+
+### Verification
+The changes satisfy all acceptance criteria:
+ Database query correctly filters by app parameter
+ API logs request parameters for debugging
+ SearchFilters interface matches API expectations
+ Empty results show helpful message with app name
+ Browser console logs clear errors/warnings
+ Client and server logging traces the data flow
+ All existing tests continue to pass
+

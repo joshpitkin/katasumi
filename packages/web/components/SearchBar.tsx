@@ -37,8 +37,24 @@ export function SearchBar() {
         ...(filters.tag && { tag: filters.tag }),
       })
 
+      console.log('[SearchBar] Performing search with params:', Object.fromEntries(params))
+
       const response = await fetch(`/api/search?${params}`)
       const data = await response.json()
+      
+      console.log('[SearchBar] Search response:', { 
+        resultsCount: data.results?.length || 0,
+        error: data.error 
+      })
+      
+      if (data.error) {
+        console.error('[SearchBar] API returned error:', data.error)
+      }
+      
+      if (data.results?.length === 0 && mode === 'app-first' && selectedApp) {
+        console.warn(`[SearchBar] No shortcuts found for app: ${selectedApp}`)
+      }
+      
       setResults(data.results || [])
       setQuery(searchQuery)
       

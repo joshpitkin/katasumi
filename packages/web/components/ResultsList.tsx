@@ -12,6 +12,7 @@ export function ResultsList({ results }: ResultsListProps) {
   const selectShortcut = useStore((state) => state.selectShortcut)
   const platform = useStore((state) => state.platform)
   const mode = useStore((state) => state.mode)
+  const selectedApp = useStore((state) => state.selectedApp)
   const selectedResultIndex = useStore((state) => state.selectedResultIndex)
   const navigateResults = useStore((state) => state.navigateResults)
   const setSelectedResultIndex = useStore((state) => state.setSelectedResultIndex)
@@ -123,10 +124,14 @@ export function ResultsList({ results }: ResultsListProps) {
   }
 
   if (results.length === 0) {
+    const emptyMessage = mode === 'app-first' && selectedApp
+      ? `No shortcuts found for ${selectedApp}. Try a different search term.`
+      : 'No shortcuts found. Try a different search.'
+    
     return (
       <div className="text-center py-12">
         <p className="text-gray-500 dark:text-gray-400">
-          No shortcuts found. Try a different search.
+          {emptyMessage}
         </p>
       </div>
     )
