@@ -391,6 +391,152 @@ Deploy to Vercel, Netlify, or any Node.js hosting:
 
 See [README.md](./README.md) for more details on production deployment.
 
+## Common Hydration Error Patterns and Solutions
+
+React hydration errors occur when the HTML rendered on the server doesn't match what React expects to render on the client. Here are common patterns and how to fix them in the Katasumi codebase:
+
+### 1. Platform Detection (FIXED)
+
+**Problem**: Detecting platform from `window.navigator.userAgent` during initial render causes hydration mismatch.
+
+```typescript
+// ❌ BAD - causes hydration error
+const useStore = create((set) => ({
+  platform: typeof window !== 'undefined' ? detectPlatform() : 'all'
+}))
+```
+
+**Solution**: Always use SSR-safe default, then update after mount.
+
+```typescript
+// ✅ GOOD - SSR-safe
+const useStore = create((set) => ({
+  platform: 'all'  // Always start with safe default
+}))
+
+// In component, detect after hydration:
+useEffect(() => {
+  if (typeof window !== 'undefined' && platform === 'all') {
+    setPlatform(detectPlatform())
+  }
+}, [])
+```
+
+### 2. Date and Time Rendering
+
+**Problem**: `Date.now()` or `new Date()` returns different values on server vs client.
+
+```typescript
+// ❌ BAD
+const timestamp = Date.now()
+return <div>Generated at {timestamp}</div>
+```
+
+**Solution**: Use `suppressHydrationWarning` for time-sensitive content or render after mount.
+
+```typescript
+// ✅ GOOD
+const [timestamp, setTimestamp] = useState<number | null>(null)
+
+useEffect(() => {
+  setTimestamp(Date.now())
+}, [])
+
+return <div>{timestamp ? `Generated at ${timestamp}` : 'Loading...'}</div>
+```
+
+### 3. localStorage and sessionStorage
+
+**Problem**: Storage APIs only exist in browser, not during SSR.
+
+```typescript
+// ❌ BAD
+const theme = localStorage.getItem('theme') || 'light'
+```
+
+**Solution**: Always check if `window` is defined and use `useEffect`.
+
+```typescript
+// ✅ GOOD
+const [theme, setTheme] = useState('light')
+
+useEffect(() => {
+  const stored = localStorage.getItem('theme')
+  if (stored) setTheme(stored)
+}, [])
+```
+
+### 4. Random Values
+
+**Problem**: `Math.random()` or `crypto.randomUUID()` produces different values on server vs client.
+
+```typescript
+// ❌ BAD
+const id = Math.random().toString()
+return <div key={id}>...</div>
+```
+
+**Solution**: Generate IDs after mount or use deterministic keys.
+
+```typescript
+// ✅ GOOD - use stable keys
+return items.map((item, index) => (
+  <div key={item.id || index}>...</div>
+))
+```
+
+### 5. next-themes (Theme Provider)
+
+The `next-themes` library requires `suppressHydrationWarning` on the `<html>` element. This is **expected and correct**.
+
+```typescript
+// ✅ CORRECT - required for next-themes
+<html lang="en" suppressHydrationWarning>
+```
+
+This is the ONLY place `suppressHydrationWarning` should be used in the codebase. Do not suppress hydration warnings elsewhere without careful consideration.
+
+### 6. Testing for Hydration Issues
+
+**E2E Tests**: Run `pnpm test:e2e` to catch console errors including hydration issues.
+
+```typescript
+// packages/web/e2e/console-errors.spec.ts monitors for:
+// - Hydration errors
+// - React warnings
+// - Console errors during navigation
+```
+
+**Unit Tests**: Run `pnpm test` to verify hydration-safe code.
+
+```typescript
+// packages/web/__tests__/hydration-safety.test.ts verifies:
+// - Store initializes with SSR-safe values
+// - No browser APIs during initialization
+// - Deterministic initial state
+```
+
+### 7. Debugging Hydration Errors
+
+When you encounter a hydration error:
+
+1. **Check the browser console** - React will tell you exactly which element mismatched
+2. **Look for**: Date/time, random values, localStorage, window/document access
+3. **Verify** server HTML matches client HTML for the problematic element
+4. **Use** `console.log` in both SSR and client to compare values
+5. **Run** E2E tests: `pnpm --filter=@katasumi/web test:e2e` to catch regressions
+
+### 8. Prevention Checklist
+
+Before committing new components:
+
+- [ ] No `Date.now()`, `new Date()`, or `Math.random()` in initial render
+- [ ] No `localStorage`, `sessionStorage`, or cookies during render
+- [ ] No `window`, `document`, or browser APIs without `typeof window` check
+- [ ] All `useEffect` hooks that access browser APIs have empty or stable dependencies
+- [ ] E2E tests pass without console errors
+- [ ] Unit tests verify SSR-safe initialization
+
 ## Additional Resources
 
 - [README.md](./README.md) - Project overview and quick start

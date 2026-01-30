@@ -65,7 +65,8 @@ const detectPlatform = (): Platform => {
 export const useStore = create<AppState>((set) => ({
   // Initial UI state
   mode: 'app-first',
-  platform: typeof window !== 'undefined' ? detectPlatform() : 'all',
+  // Always start with 'all' to avoid hydration mismatch, then update on client
+  platform: 'all',
   aiEnabled: false,
   showHelp: false,
   showPlatformSelector: false,

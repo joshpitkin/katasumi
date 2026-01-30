@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import { useStore } from '@/lib/store'
 import { isAIConfigured } from '@/lib/config'
 
@@ -12,6 +13,17 @@ export function Header() {
   const userTier = useStore((state) => state.userTier)
   const aiQueryCount = useStore((state) => state.aiQueryCount)
   const setShowSettings = useStore((state) => state.setShowSettings)
+  const setPlatform = useStore((state) => state.setPlatform)
+
+  // Detect platform on client-side after hydration to avoid mismatch
+  useEffect(() => {
+    if (typeof window !== 'undefined' && platform === 'all') {
+      const userAgent = window.navigator.userAgent.toLowerCase()
+      if (userAgent.includes('mac')) setPlatform('mac')
+      else if (userAgent.includes('win')) setPlatform('windows')
+      else if (userAgent.includes('linux')) setPlatform('linux')
+    }
+  }, [])
 
   const formatMode = (m: string) => {
     return m === 'app-first' ? 'App-First' : 'Full-Phrase'
