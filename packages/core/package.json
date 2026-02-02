@@ -5,8 +5,9 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "prisma generate && prisma generate --schema=prisma/schema.postgres.prisma && tsc --build && npm run copy-prisma",
+    "build": "prisma generate && prisma generate --schema=prisma/schema.postgres.prisma && tsc --build && pnpm run copy-prisma",
     "copy-prisma": "mkdir -p dist/generated && cp -r src/generated/prisma dist/generated/ && cp -r src/generated/prisma-postgres dist/generated/",
+    "typecheck": "tsc --noEmit",
     "dev": "tsc --build --watch",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -41,6 +42,7 @@
     "@prisma/adapter-libsql": "^7.3.0",
     "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "^7.3.0",
+    "@prisma/client-runtime-utils": "^7.3.0",
     "@types/better-sqlite3": "^7.6.13",
     "@types/pg": "^8.16.0",
     "better-sqlite3": "^12.6.2",

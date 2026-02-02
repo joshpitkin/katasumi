@@ -178,7 +178,7 @@ This script will:
    ```bash
    git clone https://github.com/joshpitkin/katasumi.git
    cd katasumi
-   npm install
+   pnpm install
    ```
 
 2. **Start PostgreSQL:**
@@ -195,18 +195,18 @@ This script will:
 
 4. **Build and seed databases:**
    ```bash
-   npm run setup:tui  # SQLite for TUI
+   pnpm run setup:tui  # SQLite for TUI
    
    # PostgreSQL for Web
    cd packages/core
-   DATABASE_URL="postgres://katasumi:dev_password@localhost:5432/katasumi_dev" DB_TYPE="postgres" npm run migrate
-   DATABASE_URL="postgres://katasumi:dev_password@localhost:5432/katasumi_dev" npm run seed
+   DATABASE_URL="postgres://katasumi:dev_password@localhost:5432/katasumi_dev" DB_TYPE="postgres" pnpm run migrate
+   DATABASE_URL="postgres://katasumi:dev_password@localhost:5432/katasumi_dev" pnpm run seed
    cd ../..
    ```
 
 5. **Start development:**
    ```bash
-   npm run dev  # Starts both TUI and Web
+   pnpm run dev  # Starts both TUI and Web
    ```
 
 For detailed instructions and troubleshooting, see [DEVELOPMENT.md](DEVELOPMENT.md).
@@ -217,45 +217,45 @@ For detailed instructions and troubleshooting, see [DEVELOPMENT.md](DEVELOPMENT.
 
 ```bash
 # Core package (shared logic)
-npm run build --workspace=@katasumi/core
+pnpm run build --workspace=@katasumi/core
 
 # TUI (terminal interface)
-npm run dev --workspace=@katasumi/tui
-npm run start:tui  # Test the TUI
+pnpm run dev --workspace=@katasumi/tui
+pnpm run start:tui  # Test the TUI
 
 # Web (Next.js app)
-npm run dev --workspace=@katasumi/web
+pnpm run dev --workspace=@katasumi/web
 # Visit http://localhost:3000
 ```
 
 **Database operations:**
 
 ```bash
-npm run migrate:status      # Check migration status
-npm run migrate:rollback    # Rollback last migration
-npm run seed                # Re-seed database
-npm run build-db            # Rebuild TUI database
+pnpm run migrate:status      # Check migration status
+pnpm run migrate:rollback    # Rollback last migration
+pnpm run seed                # Re-seed database
+pnpm run build-db            # Rebuild TUI database
 ```
 
 ### Testing & Running
 
 **Run tests:**
 ```bash
-npm test                              # All tests
-npm test --workspace=@katasumi/core  # Specific package
-npm test -- --watch                   # Watch mode
+pnpm test                              # All tests
+pnpm test --workspace=@katasumi/core  # Specific package
+pnpm test -- --watch                   # Watch mode
 ```
 
 **Type checking:**
 ```bash
-npm run typecheck                         # All packages
-npm run typecheck --workspace=@katasumi/core  # Specific package
+pnpm run typecheck                         # All packages
+pnpm run typecheck --workspace=@katasumi/core  # Specific package
 ```
 
 **Test applications:**
 ```bash
-npm run start:tui   # Test TUI interactively
-npm run start:web   # Start web app (http://localhost:3000)
+pnpm run start:tui   # Test TUI interactively
+pnpm run start:web   # Start web app (http://localhost:3000)
 ```
 
 ### How to Contribute
@@ -264,13 +264,13 @@ npm run start:web   # Start web app (http://localhost:3000)
 2. **Clone** your fork locally
 3. **Create a branch** for your changes: `git checkout -b feature/my-feature`
 4. **Make your changes** with clear, atomic commits
-5. **Test thoroughly** - run `npm test` and `npm run typecheck`
+5. **Test thoroughly** - run `pnpm test` and `pnpm run typecheck`
 6. **Push** to your fork: `git push origin feature/my-feature`
 7. **Open a Pull Request** with a clear description
 
 **Before submitting:**
-- ✅ All tests pass (`npm test`)
-- ✅ Code is properly typed (`npm run typecheck`)
+- ✅ All tests pass (`pnpm test`)
+- ✅ Code is properly typed (`pnpm run typecheck`)
 - ✅ Documentation is updated if needed
 - ✅ Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/)
 

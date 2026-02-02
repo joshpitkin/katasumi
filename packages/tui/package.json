@@ -10,13 +10,14 @@
   },
   "scripts": {
     "build": "tsc --build",
-    "dev": "npm run build && node dist/cli.js",
+    "dev": "pnpm run build && node dist/cli.js",
     "start": "node dist/cli.js",
     "test": "vitest run",
     "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
     "test-adapter": "node dist/test-adapter.js",
     "verify": "node dist/verify-db-001.js",
-    "verify-tui-001": "npm run build && node dist/verify-tui-001.js"
+    "verify-tui-001": "pnpm run build && node dist/verify-tui-001.js"
   },
   "keywords": [
     "shortcuts",

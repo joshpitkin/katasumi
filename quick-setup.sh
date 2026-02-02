@@ -47,37 +47,43 @@ fi
 
 echo ""
 
-# Run npm install
+# Run pnpm install
 echo "📦 Installing dependencies..."
-npm install
+pnpm install
 
 echo ""
 
-# Setup PostgreSQL if Docker is running (do this BEFORE building)
+# Build packages (generates Prisma clients)
+echo "🔨 Building packages..."
+pnpm run build
+
+echo ""
+
+# Setup PostgreSQL if Docker is running
 if docker-compose ps | grep -q "katasumi-postgres"; then
     echo "🗄️  Setting up PostgreSQL (Web)..."
     cd packages/core
-    DATABASE_URL="postgres://katasumi:dev_password@localhost:5432/katasumi_dev" DB_TYPE="postgres" npm run migrate
-    DATABASE_URL="postgres://katasumi:dev_password@localhost:5432/katasumi_dev" DB_TYPE="postgres" npm run seed
+    DATABASE_URL="postgres://katasumi:dev_password@localhost:5432/katasumi_dev" DB_TYPE="postgres" pnpm run migrate
+    DATABASE_URL="postgres://katasumi:dev_password@localhost:5432/katasumi_dev" DB_TYPE="postgres" pnpm run seed
     cd ../..
     echo "✅ PostgreSQL setup complete"
 else
     echo "⏭️  PostgreSQL not running via Docker. Skipping web database setup."
-    echo "   Run manually: cd packages/core && DATABASE_URL=postgres://<user>:<pass>@localhost:5432/<db> DB_TYPE=postgres npm run migrate && npm run seed"
+    echo "   Run manually: cd packages/core && DATABASE_URL=postgres://<user>:<pass>@localhost:5432/<db> DB_TYPE=postgres pnpm run migrate && pnpm run seed"
 fi
 
 echo ""
 
-# Run setup (builds SQLite for TUI)
-echo "🔨 Building and setting up SQLite (TUI)..."
-npm run setup:tui
+# Setup SQLite for TUI
+echo "🔨 Setting up SQLite (TUI)..."
+pnpm run setup:tui
 
 echo ""
 echo "✨ Setup complete!"
 echo ""
 echo "Next steps:"
-echo "  1. Start development: npm run dev"
-echo "  2. Test TUI: npm run start:tui"
+echo "  1. Start development: pnpm run dev"
+echo "  2. Test TUI: pnpm run start:tui"
 echo "  3. Open Web: http://localhost:3000"
 echo ""
 echo "For more details, see DEVELOPMENT.md"

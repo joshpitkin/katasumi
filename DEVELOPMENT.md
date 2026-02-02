@@ -26,7 +26,7 @@ Katasumi uses **two different database systems** optimized for each application:
 
 ## Prerequisites
 
-- **Node.js 18+** and npm (or pnpm)
+- **Node.js 18+** and **pnpm** (package manager)
 - **Docker** and **Docker Compose** (recommended for easiest setup)
 - **OR** PostgreSQL 14+ (if not using Docker)
 - Git
@@ -40,7 +40,7 @@ The fastest way to get started is using Docker Compose to run PostgreSQL:
 ```bash
 git clone https://github.com/joshpitkin/katasumi.git
 cd katasumi
-npm install
+pnpm install
 ```
 
 ### 2. Start PostgreSQL
@@ -69,7 +69,7 @@ The default configuration in `.env.local` is already set up for the Docker Postg
 ### 4. Run Setup
 
 ```bash
-npm run setup:tui
+pnpm run setup:tui
 ```
 
 This command:
@@ -83,10 +83,10 @@ This command:
 ```bash
 # Migrate PostgreSQL schema
 cd packages/core
-DATABASE_URL="postgres://katasumi:dev_password@localhost:5432/katasumi_dev" DB_TYPE="postgres" npm run migrate
+DATABASE_URL="postgres://katasumi:dev_password@localhost:5432/katasumi_dev" DB_TYPE="postgres" pnpm run migrate
 
 # Seed PostgreSQL with shortcuts data
-DATABASE_URL="postgres://katasumi:dev_password@localhost:5432/katasumi_dev" npm run seed
+DATABASE_URL="postgres://katasumi:dev_password@localhost:5432/katasumi_dev" pnpm run seed
 
 cd ../..
 ```
@@ -94,7 +94,7 @@ cd ../..
 ### 6. Start Development Servers
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 This starts:
@@ -105,7 +105,7 @@ This starts:
 
 **Test TUI:**
 ```bash
-npm run start:tui
+pnpm run start:tui
 ```
 
 **Test Web:**
@@ -206,7 +206,7 @@ The TUI doesn't require any environment configuration. It uses the bundled datab
 The SQLite database is automatically created when you run:
 
 ```bash
-npm run setup:tui
+pnpm run setup:tui
 ```
 
 This creates:
@@ -222,10 +222,10 @@ After starting PostgreSQL (Docker or manual), set it up:
 cd packages/core
 
 # Run migrations
-DATABASE_URL="postgres://katasumi:dev_password@localhost:5432/katasumi_dev" DB_TYPE="postgres" npm run migrate
+DATABASE_URL="postgres://katasumi:dev_password@localhost:5432/katasumi_dev" DB_TYPE="postgres" pnpm run migrate
 
 # Seed with shortcuts data
-DATABASE_URL="postgres://katasumi:dev_password@localhost:5432/katasumi_dev" npm run seed
+DATABASE_URL="postgres://katasumi:dev_password@localhost:5432/katasumi_dev" pnpm run seed
 
 cd ../..
 ```
@@ -235,7 +235,7 @@ cd ../..
 ### All Services (Recommended)
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 Runs both TUI and Web in parallel using Turborepo.
@@ -244,12 +244,12 @@ Runs both TUI and Web in parallel using Turborepo.
 
 **TUI Only:**
 ```bash
-npm run dev --workspace=@katasumi/tui
+pnpm run dev --workspace=@katasumi/tui
 ```
 
 **Web Only:**
 ```bash
-npm run dev --workspace=@katasumi/web
+pnpm run dev --workspace=@katasumi/web
 # Then visit http://localhost:3000
 ```
 
@@ -258,20 +258,20 @@ npm run dev --workspace=@katasumi/web
 ### Run All Tests
 
 ```bash
-npm test
+pnpm test
 ```
 
 ### Test Individual Packages
 
 ```bash
 # Core package tests
-npm test --workspace=@katasumi/core
+pnpm test --workspace=@katasumi/core
 
 # TUI tests
-npm test --workspace=@katasumi/tui
+pnpm test --workspace=@katasumi/tui
 
 # Web tests
-npm test --workspace=@katasumi/web
+pnpm test --workspace=@katasumi/web
 ```
 
 ## Database Management
@@ -279,31 +279,31 @@ npm test --workspace=@katasumi/web
 ### Check Migration Status
 
 ```bash
-npm run migrate:status
+pnpm run migrate:status
 ```
 
 ### Rollback Last Migration
 
 ```bash
-npm run migrate:rollback
+pnpm run migrate:rollback
 ```
 
 ### Re-seed Database
 
 ```bash
 # SQLite (TUI)
-npm run seed --workspace=@katasumi/core
+pnpm run seed --workspace=@katasumi/core
 
 # PostgreSQL (Web)
 cd packages/core
-DATABASE_URL="postgres://katasumi:dev_password@localhost:5432/katasumi_dev" npm run seed
+DATABASE_URL="postgres://katasumi:dev_password@localhost:5432/katasumi_dev" pnpm run seed
 cd ../..
 ```
 
 ### Rebuild TUI Database
 
 ```bash
-npm run build-db --workspace=@katasumi/core
+pnpm run build-db --workspace=@katasumi/core
 ```
 
 ## Troubleshooting
@@ -339,21 +339,21 @@ kill -9 $(lsof -t -i:3000)
 
 ```bash
 # Rebuild the database
-npm run build-db --workspace=@katasumi/core
+pnpm run build-db --workspace=@katasumi/core
 ```
 
 ### Prisma Client Generation Issues
 
 ```bash
 # Regenerate Prisma clients
-npm run build
+pnpm run build
 ```
 
 ### "No shortcuts found" in TUI
 
 1. Check database exists: `ls -la packages/core/data/shortcuts.db`
-2. Re-seed: `npm run seed --workspace=@katasumi/core`
-3. Rebuild: `npm run build-db --workspace=@katasumi/core`
+2. Re-seed: `pnpm run seed --workspace=@katasumi/core`
+3. Rebuild: `pnpm run build-db --workspace=@katasumi/core`
 
 ### Docker Compose Issues
 
@@ -376,7 +376,7 @@ docker-compose up -d
 The TUI is distributed as a standalone npm package with the database bundled:
 
 ```bash
-npm run build
+pnpm run build
 # Database is bundled at packages/core/data/shortcuts.db
 ```
 

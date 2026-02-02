@@ -44,7 +44,7 @@ Use the bug report template when available.
 TUI crashes when searching for shortcuts with special characters
 
 **Steps to Reproduce**
-1. Launch TUI with `npm run start:tui`
+1. Launch TUI with `pnpm run start:tui`
 2. Type "copy (" in the search box
 3. Application crashes
 
@@ -101,7 +101,7 @@ Documentation changes follow the same pull request process as code changes.
 
 ### Prerequisites
 
-- **Node.js 18+** and npm (or pnpm)
+- **Node.js 18+** and **pnpm** (package manager)
 - **Docker** and **Docker Compose** (recommended for local development)
 - **OR** PostgreSQL 14+ (if not using Docker)
 - Git
@@ -131,7 +131,7 @@ If you prefer to set up manually or need more control:
 ```bash
 git clone https://github.com/joshpitkin/katasumi.git
 cd katasumi
-npm install
+pnpm install
 ```
 
 #### 2. Start PostgreSQL
@@ -158,12 +158,12 @@ cp packages/web/.env.example packages/web/.env.local
 
 ```bash
 # Build SQLite database for TUI
-npm run setup:tui
+pnpm run setup:tui
 
 # Setup PostgreSQL for Web
 cd packages/core
-DATABASE_URL="postgres://katasumi:dev_password@localhost:5432/katasumi_dev" DB_TYPE="postgres" npm run migrate
-DATABASE_URL="postgres://katasumi:dev_password@localhost:5432/katasumi_dev" npm run seed
+DATABASE_URL="postgres://katasumi:dev_password@localhost:5432/katasumi_dev" DB_TYPE="postgres" pnpm run migrate
+DATABASE_URL="postgres://katasumi:dev_password@localhost:5432/katasumi_dev" pnpm run seed
 cd ../..
 ```
 
@@ -171,7 +171,7 @@ cd ../..
 
 ```bash
 # Run all packages in development mode
-npm run dev
+pnpm run dev
 ```
 
 For detailed setup instructions and troubleshooting, see [DEVELOPMENT.md](DEVELOPMENT.md).
@@ -195,19 +195,19 @@ katasumi/
 **Core Package:**
 ```bash
 cd packages/core
-npm run build  # Rebuild after changes
-npm test       # Run tests
+pnpm run build  # Rebuild after changes
+pnpm test       # Run tests
 ```
 
 **TUI:**
 ```bash
-npm run dev --workspace=@katasumi/tui  # Watch mode
-npm run start:tui                       # Test the TUI
+pnpm run dev --workspace=@katasumi/tui  # Watch mode
+pnpm run start:tui                       # Test the TUI
 ```
 
 **Web:**
 ```bash
-npm run dev --workspace=@katasumi/web  # Next.js dev server
+pnpm run dev --workspace=@katasumi/web  # Next.js dev server
 # Visit http://localhost:3000
 ```
 
@@ -215,30 +215,30 @@ npm run dev --workspace=@katasumi/web  # Next.js dev server
 
 ```bash
 # All tests
-npm test
+pnpm test
 
 # Specific package
-npm test --workspace=@katasumi/core
+pnpm test --workspace=@katasumi/core
 
 # Watch mode
-npm test -- --watch
+pnpm test -- --watch
 ```
 
 ### Database Management
 
 ```bash
 # Check migration status
-npm run migrate:status
+pnpm run migrate:status
 
 # Create a new migration
 cd packages/core
-npm run migrate:create migration_name
+pnpm run migrate:create migration_name
 
 # Rollback last migration
-npm run migrate:rollback
+pnpm run migrate:rollback
 
 # Re-seed database
-npm run seed
+pnpm run seed
 ```
 
 ## Pull Request Process
@@ -246,8 +246,8 @@ npm run seed
 ### Before Submitting
 
 1. **Update your fork** with the latest changes from `main`
-2. **Run tests** and ensure they pass: `npm test`
-3. **Run type checking**: `npm run typecheck`
+2. **Run tests** and ensure they pass: `pnpm test`
+3. **Run type checking**: `pnpm run typecheck`
 4. **Update documentation** if you've changed APIs or added features
 5. **Add tests** for new functionality
 6. **Update CHANGELOG** if applicable
@@ -318,8 +318,8 @@ When you create a pull request, please include:
 
 ### Code Style
 
-- **Prettier** is used for formatting (run `npm run format`)
-- **ESLint** enforces code quality (run `npm run lint`)
+- **Prettier** is used for formatting (run `pnpm run format`)
+- **ESLint** enforces code quality (run `pnpm run lint`)
 - Use **meaningful variable names**
 - Keep functions **small and focused**
 - Add **JSDoc comments** for public APIs
