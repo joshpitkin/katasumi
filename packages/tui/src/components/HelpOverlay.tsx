@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Text } from 'ink';
+import { Box, Text, useInput } from 'ink';
 import { useTerminalSize } from '../hooks/useTerminalSize.js';
 
 interface HelpOverlayProps {
@@ -8,6 +8,13 @@ interface HelpOverlayProps {
 
 export function HelpOverlay({ onClose }: HelpOverlayProps) {
   const terminalSize = useTerminalSize();
+  
+  // Handle ESC key to close help
+  useInput((input, key) => {
+    if (key.escape) {
+      onClose();
+    }
+  });
   
   // Show warning if terminal is too small
   if (terminalSize.isTooSmall || terminalSize.isTooNarrow) {
@@ -50,19 +57,24 @@ export function HelpOverlay({ onClose }: HelpOverlayProps) {
         <Text>  p                Platform selector</Text>
         <Text dimColor />
         <Text bold>Navigation:</Text>
-        <Text>  /                Focus search</Text>
-        <Text>  ↑↓               Navigate results (single step)</Text>
+        <Text>  /                Focus search input</Text>
+        <Text>  Esc              Toggle input mode / Back</Text>
+        <Text>  ↑↓ / j k         Navigate results</Text>
         <Text>  Ctrl+U           Scroll up half page</Text>
         <Text>  Ctrl+D           Scroll down half page</Text>
         <Text>  Ctrl+B           Scroll up full page</Text>
         <Text>  Ctrl+F           Scroll down full page</Text>
         <Text>  Enter            Select / Show details</Text>
-        <Text>  Esc              Back / Close / Unfocus</Text>
         <Text dimColor />
         <Text bold>Search Modes:</Text>
         <Text>  Tab              Toggle App-First ↔ Full-Phrase</Text>
-        <Text>  g                Go to app selector (App-First)</Text>
-        <Text>  f                Focus filters (App-First)</Text>
+        <Text dimColor />
+        <Text bold>App-First Mode:</Text>
+        <Text>  g                Go back to app selector</Text>
+        <Text>  /                Focus quick search (from nav mode)</Text>
+        <Text>  Tab              Toggle filter modal (when search focused)</Text>
+        <Text>  Esc              Exit input / Back to search</Text>
+        <Text>  j / k            Navigate down / up</Text>
         <Text dimColor />
         <Text bold>Detail View:</Text>
         <Text>  c                Copy keys to clipboard</Text>

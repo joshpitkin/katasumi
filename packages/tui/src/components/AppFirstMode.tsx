@@ -160,25 +160,21 @@ export function AppFirstMode({ selectedApp, view }: AppFirstModeProps) {
     loadShortcuts();
   }, [selectedApp, setResults]);
 
-  // Handle g/f navigation (vi-style shortcuts)
+  // Handle g navigation (vi-style shortcut)
   useInput((input, key) => {
     // Check if we're in input mode
     const isInputMode = useAppStore.getState().isInputMode;
     
-    if (key.escape && selectedApp) {
-      selectApp(null);
-      setAppQuery('');
-      setQuickSearchQuery('');
-      setFocusSection('app-selector');
-    } else if (!isInputMode && input === 'g' && selectedApp) {
+    // Only handle these shortcuts in navigation mode
+    if (isInputMode) {
+      return;
+    }
+    
+    if (input === 'g' && selectedApp) {
       // g: Go to app selector (return to app selection) - only in navigation mode
       selectApp(null);
       setAppQuery('');
-      setQuickSearchQuery('');
       setFocusSection('app-selector');
-    } else if (!isInputMode && input === 'f' && selectedApp) {
-      // f: Focus filters bar - only in navigation mode
-      setFocusSection('filters');
     }
   });
 
@@ -278,6 +274,29 @@ export function AppFirstMode({ selectedApp, view }: AppFirstModeProps) {
     );
   }
 
+  // Apply filters to results
+  const filteredResults = results.filter(shortcut => {
+    // Apply context filter
+    if (filters.context && shortcut.context !== filters.context) {
+      return false;
+    }
+    
+    // Apply category filter
+    if (filters.category && shortcut.category !== filters.category) {
+      return false;
+    }
+    
+    // Apply tags filter (shortcut must have ALL selected tags)
+    if (filters.tags.length > 0) {
+      const hasAllTags = filters.tags.every(tag => shortcut.tags.includes(tag));
+      if (!hasAllTags) {
+        return false;
+      }
+    }
+    
+    return true;
+  });
+
   // Show filters and results
   return (
     <Box flexDirection="column" flexGrow={1} minHeight={0}>
@@ -300,7 +319,7 @@ export function AppFirstMode({ selectedApp, view }: AppFirstModeProps) {
       {/* Results list - scrollable */}
       <Box flexGrow={1} minHeight={0}>
         <ResultsList
-          results={results}
+          results={filteredResults}
           platform={platform}
           quickSearchQuery={quickSearchQuery}
           onSelectShortcut={selectShortcut}

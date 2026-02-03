@@ -103,9 +103,9 @@ export function FullPhraseMode({ aiEnabled, view }: FullPhraseModeProps) {
     // Only handle input when in input mode
     if (!isInputFocused) {
       // In navigation mode, handle page navigation and arrow keys
-      if (key.upArrow) {
+      if (key.upArrow || input === 'k') {
         setSelectedIndex(prev => Math.max(0, prev - 1));
-      } else if (key.downArrow) {
+      } else if (key.downArrow || input === 'j') {
         setSelectedIndex(prev => Math.min(results.length - 1, prev + 1));
       } else if (key.ctrl && input === 'u') {
         // Ctrl+U: Scroll up half page
@@ -158,9 +158,9 @@ export function FullPhraseMode({ aiEnabled, view }: FullPhraseModeProps) {
         performSearch(query);
         setIsInputFocused(false);
       }
-    } else if (key.upArrow) {
+    } else if (key.upArrow || input === 'k') {
       setSelectedIndex(prev => Math.max(0, prev - 1));
-    } else if (key.downArrow) {
+    } else if (key.downArrow || input === 'j') {
       setSelectedIndex(prev => Math.min(results.length - 1, prev + 1));
     } else if (key.backspace || key.delete) {
       // Handle backspace

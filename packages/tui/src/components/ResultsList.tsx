@@ -33,6 +33,12 @@ export function ResultsList({ results, platform, quickSearchQuery, onSelectShort
   useInput((input, key) => {
     const isInputMode = useAppStore.getState().isInputMode;
     
+    // ESC: Go back to search/filters when in navigation mode
+    if (!isInputMode && key.escape && onFocusSearch) {
+      onFocusSearch();
+      return;
+    }
+    
     // Allow "/" to focus search even in navigation mode
     if (!isInputMode && input === '/' && onFocusSearch) {
       onFocusSearch();
@@ -49,9 +55,9 @@ export function ResultsList({ results, platform, quickSearchQuery, onSelectShort
       setTimeout(() => setAtBoundary(null), 1000);
     };
 
-    if (key.upArrow) {
+    if (key.upArrow || input === 'k') {
       setSelectedIndex(prev => Math.max(0, prev - 1));
-    } else if (key.downArrow) {
+    } else if (key.downArrow || input === 'j') {
       setSelectedIndex(prev => Math.min(filteredResults.length - 1, prev + 1));
     } else if (key.ctrl && input === 'u') {
       // Ctrl+U: Scroll up half page

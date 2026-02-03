@@ -7,7 +7,11 @@ interface GlobalKeybindingsProps {
   onToggleAI: () => void;
   onShowHelp: () => void;
   onShowPlatformSelector: () => void;
+  onShowFilterModal: () => void;
   onQuit: () => void;
+  showFilterModal: boolean;
+  showHelp: boolean;
+  showPlatformSelector: boolean;
 }
 
 export function GlobalKeybindings({
@@ -15,9 +19,16 @@ export function GlobalKeybindings({
   onToggleAI,
   onShowHelp,
   onShowPlatformSelector,
+  onShowFilterModal,
   onQuit,
+  showFilterModal,
+  showHelp,
+  showPlatformSelector,
 }: GlobalKeybindingsProps) {
   const isInputMode = useAppStore((state) => state.isInputMode);
+  const mode = useAppStore((state) => state.mode);
+  const selectedApp = useAppStore((state) => state.selectedApp);
+  const focusSection = useAppStore((state) => state.focusSection);
 
   useInput((input, key) => {
     // Always allow Ctrl+C to quit
@@ -26,8 +37,19 @@ export function GlobalKeybindings({
       return;
     }
 
-    // Always allow Tab to toggle mode
+    // Skip Tab handling when any modal is open (let the modal handle it)
+    if (key.tab && (showFilterModal || showHelp || showPlatformSelector)) {
+      return;
+    }
+
+    // Tab behavior depends on context
     if (key.tab) {
+      // In app-first mode with filters focused, Tab opens filter modal
+      if (mode === 'app-first' && selectedApp && focusSection === 'filters') {
+        onShowFilterModal();
+        return;
+      }
+      // Otherwise, toggle mode as usual
       onToggleMode();
       return;
     }

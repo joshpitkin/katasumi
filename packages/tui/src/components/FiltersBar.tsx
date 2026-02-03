@@ -67,24 +67,27 @@ export function FiltersBar({ onQuickSearchChange, selectedApp }: FiltersBarProps
       <Box justifyContent="space-between" width="100%">
         <Box>
           <Text bold color={isFocused ? 'cyan' : 'white'}>
-            {isFocused ? '🔍' : 'Search'}
+            '🔍 Search'
           </Text>
           <Text dimColor>: </Text>
           <Text color={isFocused ? 'yellow' : 'white'}>
             {quickSearchQuery || (isFocused ? '...' : '_')}
           </Text>
+          {isFocused && (
+            <Text dimColor> (type to filter, Tab: toggle filters, Esc/Enter: navigate)</Text>
+          )}
         </Box>
         <Box gap={1}>
-          <Text dimColor>{terminalSize.columns > 100 ? 'Context' : 'Ctx'}:</Text>
+          <Text dimColor>{terminalSize.columns > 120 ? 'Context' : 'Ctx'}:</Text>
           <Text>{filters.context || 'All'}</Text>
           <Text dimColor>|</Text>
-          <Text dimColor>{terminalSize.columns > 100 ? 'Category' : 'Cat'}:</Text>
+          <Text dimColor>{terminalSize.columns > 120 ? 'Category' : 'Cat'}:</Text>
           <Text>{filters.category || 'All'}</Text>
           <Text dimColor>|</Text>
-          <Text dimColor>{terminalSize.columns > 100 ? 'Tags' : 'T'}:</Text>
+          <Text dimColor>{terminalSize.columns > 120 ? 'Tags' : 'T'}:</Text>
           <Text>{filters.tags.length > 0 ? filters.tags.join(',') : 'None'}</Text>
           <Text dimColor>|</Text>
-          <Text dimColor>R:</Text>
+          <Text dimColor>{terminalSize.columns > 120 ? 'Results' : 'R'}:</Text>
           <Text>{results.length}</Text>
         </Box>
       </Box>

@@ -117,7 +117,15 @@ export const useAppStore = create<AppState>((set, get) => ({
   setSelectedAppIndex: (index) => set({ selectedAppIndex: index }),
   setQuickSearchQuery: (query) => set({ quickSearchQuery: query }),
   
-  selectApp: (app) => set({ selectedApp: app, view: app ? 'results' : 'search', focusSection: app ? 'filters' : 'app-selector' }),
+  selectApp: (app) => set((state) => ({ 
+    selectedApp: app, 
+    view: app ? 'results' : 'search', 
+    focusSection: app ? 'filters' : 'app-selector',
+    // Clear filters when deselecting app OR when selecting a different app
+    filters: (app && app.id === state.selectedApp?.id) ? state.filters : { context: null, category: null, tags: [] },
+    // Clear quick search when changing apps
+    quickSearchQuery: app ? state.quickSearchQuery : ''
+  })),
   setQuery: (query) => set({ query }),
   setFilters: (filters) => set((state) => ({ filters: { ...state.filters, ...filters } })),
   setResults: (results) => set({ results }),

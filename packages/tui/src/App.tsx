@@ -9,16 +9,19 @@ import { FullPhraseMode } from './components/FullPhraseMode.js';
 import { GlobalKeybindings } from './components/GlobalKeybindings.js';
 import { HelpOverlay } from './components/HelpOverlay.js';
 import { PlatformSelector } from './components/PlatformSelector.js';
+import { FilterModal } from './components/FilterModal.js';
 
 export default function App() {
   const [showHelp, setShowHelp] = useState(false);
   const [showPlatformSelector, setShowPlatformSelector] = useState(false);
+  const [showFilterModal, setShowFilterModal] = useState(false);
   const [terminalRows, setTerminalRows] = useState(process.stdout.rows || 24);
   const mode = useAppStore((state) => state.mode);
   const view = useAppStore((state) => state.view);
   const platform = useAppStore((state) => state.platform);
   const aiEnabled = useAppStore((state) => state.aiEnabled);
   const selectedApp = useAppStore((state) => state.selectedApp);
+  const results = useAppStore((state) => state.results);
   const toggleMode = useAppStore((state) => state.toggleMode);
   const toggleAI = useAppStore((state) => state.toggleAI);
   const setPlatform = useAppStore((state) => state.setPlatform);
@@ -33,6 +36,13 @@ export default function App() {
 
   const handleShowPlatformSelector = () => {
     setShowPlatformSelector(!showPlatformSelector);
+  };
+
+  const handleShowFilterModal = () => {
+    // Only show filter modal in app-first mode when app is selected
+    if (mode === 'app-first' && selectedApp) {
+      setShowFilterModal(!showFilterModal);
+    }
   };
 
   const handlePlatformSelect = (newPlatform: typeof platform) => {
@@ -74,6 +84,11 @@ export default function App() {
             onSelect={handlePlatformSelect}
             onClose={() => setShowPlatformSelector(false)}
           />
+        ) : showFilterModal && selectedApp ? (
+          <FilterModal
+            shortcuts={results}
+            onClose={() => setShowFilterModal(false)}
+          />
         ) : (
           <>
             {mode === 'app-first' ? (
@@ -85,14 +100,18 @@ export default function App() {
         )}
       </Box>
 
-      <Footer mode={mode} />
+      <Footer mode={mode} selectedApp={selectedApp} />
 
       <GlobalKeybindings
         onToggleMode={toggleMode}
         onToggleAI={toggleAI}
         onShowHelp={handleShowHelp}
         onShowPlatformSelector={handleShowPlatformSelector}
+        onShowFilterModal={handleShowFilterModal}
         onQuit={handleQuit}
+        showFilterModal={showFilterModal}
+        showHelp={showHelp}
+        showPlatformSelector={showPlatformSelector}
       />
     </Box>
   );
