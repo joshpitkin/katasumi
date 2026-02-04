@@ -2199,7 +2199,7 @@
         "Create E2E test for AI scraping flow",
         "Run 'pnpm test --filter=@katasumi/web' and verify tests pass"
       ],
-      "passes": false,
+      "passes": true,
       "priority": 1,
       "priorityRationale": "Key AI feature that differentiates Katasumi. Enables discovery of shortcuts for long-tail apps not in curated database. This addresses the 'missing app' problem and makes AI mode actually useful.",
       "reportedDate": "2026-02-03",
