@@ -17,6 +17,12 @@ interface Config {
   aiEnabled?: boolean;
   mode?: 'app-first' | 'full-phrase';
   ai?: AIConfig;
+  token?: string;
+  user?: {
+    id: string;
+    email: string;
+    tier: string;
+  };
 }
 
 const CONFIG_DIR = path.join(process.env.HOME || '~', '.katasumi');
@@ -79,4 +85,30 @@ export function isAIConfigured(): boolean {
   
   // Other providers require an API key
   return !!aiConfig.apiKey && aiConfig.apiKey.trim().length > 0;
+}
+
+export function saveToken(token: string, user?: { id: string; email: string; tier: string }): void {
+  const config = loadConfig();
+  config.token = token;
+  if (user) {
+    config.user = user;
+  }
+  saveConfig(config);
+}
+
+export function loadToken(): string | undefined {
+  const config = loadConfig();
+  return config.token;
+}
+
+export function loadUser(): { id: string; email: string; tier: string } | undefined {
+  const config = loadConfig();
+  return config.user;
+}
+
+export function clearAuth(): void {
+  const config = loadConfig();
+  delete config.token;
+  delete config.user;
+  saveConfig(config);
 }

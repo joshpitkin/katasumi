@@ -2630,3 +2630,110 @@ Added visible authentication UI to the web header to make login functionality di
 - Pre-existing test failures in tab-toggle-mode.test.tsx are unrelated to this implementation
 - Implementation follows existing patterns in the codebase (zustand store, Next.js routing)
 - Authentication flow integrates with existing /login page and API routes
+
+---
+
+## PHASE2-TUI-008: Login Command Implementation
+**Date:** 2026-02-07
+**Status:** ✅ COMPLETE
+
+### Implementation Summary
+Implemented `katasumi login` CLI command for authenticating premium users and storing API tokens in the TUI package.
+
+### Changes Made
+
+1. **New Login Command Module** (`packages/tui/src/commands/login.ts`)
+   - Interactive email/password prompts with masked password input
+   - Secure password masking using raw mode stdin handling
+   - API integration with `/api/auth/login` endpoint
+   - Token verification via `/api/sync/status` endpoint
+   - Support for `--web` flag to open browser for OAuth login
+   - Support for `--token` flag for direct token input
+   - JWT token storage in `~/.katasumi/config.json` with 600 permissions
+   - User information storage (id, email, tier)
+   - Comprehensive error handling with helpful messages
+
+2. **Updated CLI Entry Point** (`packages/tui/src/cli.tsx`)
+   - Added command-line argument parsing
+   - Route `login` command to loginCommand()
+   - Maintained backward compatibility (no args = launch TUI)
+
+3. **Enhanced Config Management** (`packages/tui/src/utils/config.ts`)
+   - Added `token` and `user` fields to Config interface
+   - Added `saveToken()` function to store JWT and user info
+   - Added `loadToken()` function to retrieve JWT
+   - Added `loadUser()` function to retrieve user info
+   - Added `clearAuth()` function to remove credentials
+   - All token storage uses 600 file permissions (user read/write only)
+
+4. **Comprehensive Test Suite** (`packages/tui/src/__tests__/login-command.test.ts`)
+   - 9 tests covering:
+     - Config directory creation and file permissions (600)
+     - Token and user info storage
+     - Successful login API response handling
+     - Login error handling (401 unauthorized)
+     - Token verification
+     - Invalid token handling
+     - Network error handling
+     - Malformed JSON config handling
+
+### Testing Results
+- ✅ All 173 TUI tests pass (including 9 new login command tests)
+- ✅ TypeScript type checks pass
+- ✅ Build successful
+
+### Acceptance Criteria Status
+ Command prompts for email and password
+ Password input is masked
+ On success, displays 'Logged in successfully' message
+ Stores JWT token in ~/.katasumi/config.json
+ Token stored with 600 file permissions (user read/write only)
+ Provides --web flag for OAuth browser-based login
+ On error, displays helpful error message
+ Validates token by making test API call
+
+### Usage Examples
+```bash
+# Interactive login
+katasumi login
+# Prompts for email and password, stores token
+
+# Browser-based OAuth login
+katasumi login --web
+# Opens browser to /login page
+
+# Direct token input
+katasumi login --token <jwt-token>
+# Verifies and stores provided token
+```
+
+### Configuration File Structure
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": "user-123",
+    "email": "user@example.com",
+    "tier": "premium"
+  },
+  "platform": "macos",
+  "ai": { ... }
+}
+```
+
+### Technical Notes
+- Password masking implemented using Node.js raw mode stdin
+- API base URL configurable via KATASUMI_API_URL env var (defaults to http://localhost:3000)
+- Token verification happens before storage to ensure validity
+- File permissions (600) enforced at write time for security
+- Integrates seamlessly with existing config management system
+- Command-line interface maintains backward compatibility
+
+### Files Modified
+- `packages/tui/src/cli.tsx` - Added command routing
+- `packages/tui/src/utils/config.ts` - Added auth functions
+
+### Files Created
+- `packages/tui/src/commands/login.ts` - Login command implementation
+- `packages/tui/src/__tests__/login-command.test.ts` - Test suite
+
