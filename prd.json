@@ -739,9 +739,9 @@
         "Large search input with placeholder text",
         "Results grouped by app with clear dividers",
         "AI toggle button (Cmd+A or click)",
-        "AI status indicator shows ON/OFF and remaining query count",
+        "AI status indicator shows ON/OFF state",
         "Results show app icon/name, keys, action, context",
-        "Premium users see 'Unlimited' instead of query count"
+        "Premium users with built-in AI see usage: 'Used X/100 queries today'"
       ],
       "stepsToVerify": [
         "Click mode toggle or press Tab and verify switch to Full-Phrase",
@@ -749,8 +749,7 @@
         "Type 'how to split screen' and verify cross-app results",
         "Verify results grouped by app name",
         "Click AI toggle and verify indicator changes ON → OFF",
-        "Verify query count decrements for free users",
-        "Login as premium user and verify 'Unlimited' shown",
+        "Login as premium user using built-in AI and verify usage counter shown",
         "Verify app icons/names displayed correctly",
         "Run 'npm run test --workspace=@katasumi/web' to execute Full-Phrase mode UI tests",
         "Run 'npm test' from root to execute all package tests"
@@ -820,7 +819,7 @@
       "acceptanceCriteria": [
         "GET /api/search?q=query&app=vim&platform=mac returns search results",
         "POST /api/ai with {query, platform} returns AI-enhanced results",
-        "Rate limiting: 5 AI queries per day for free users",
+        "Rate limiting: 100 AI queries/day for premium users using built-in AI, unlimited for enterprise",
         "GET /api/sync/pull?since=timestamp returns user shortcuts",
         "POST /api/sync/push with shortcuts array syncs to database",
         "All sync endpoints require authentication (JWT verification)",
@@ -831,7 +830,7 @@
         "Make GET request to /api/search?q=move with curl",
         "Verify JSON response with shortcuts array",
         "Make POST to /api/ai with query and verify AI results",
-        "Make 6 AI requests as free user and verify rate limit error",
+        "Make 101 AI requests as premium user with built-in AI and verify rate limit on 101st",
         "Make sync request without auth header and verify 401",
         "Login and make GET /api/sync/pull with valid token",
         "Verify user's shortcuts returned",
@@ -847,7 +846,7 @@
         "summary": "Implemented all API routes with authentication, rate limiting, and comprehensive tests",
         "changes": [
           "Added /api/ai endpoint with AISearchEngine integration",
-          "Implemented rate limiting (5 queries/day for free users)",
+          "Implemented rate limiting (100 queries/day for premium users using built-in AI, unlimited for enterprise, no tracking for users with personal API keys)",
           "Updated /api/search to support both q and query parameters",
           "Added AiUsage model to Prisma schema for rate tracking",
           "Created comprehensive test suite (25 tests passing)",
@@ -1102,7 +1101,7 @@
         "Select app and filter to impossible combination, verify no results message",
         "Disconnect network and attempt sync, verify network error message",
         "Configure invalid AI API key and search, verify fallback to keyword",
-        "As free user, exceed 5 AI queries and verify rate limit message",
+        "As premium user with built-in AI, exceed 100 queries and verify rate limit message",
         "Check error.log and verify errors logged with timestamps",
         "Verify no stack traces shown in UI (only in log file)",
         "Run 'npm run test --workspace=@katasumi/tui' to execute error handling tests",
@@ -2416,6 +2415,48 @@
       "technicalNotes": "Stripe Integration Prep:\n1. Install stripe package: pnpm add stripe @stripe/stripe-js\n2. Add STRIPE_SECRET_KEY to .env (empty for now)\n3. Create /api/stripe/checkout route (returns 501 Not Implemented)\n4. Create /api/stripe/webhook route (stubbed)\n5. Create subscriptions table:\n   - id, user_id, stripe_customer_id, stripe_subscription_id, status, created_at, updated_at\n6. Sign-up page uses Radix UI Tabs or comparison component\n7. Pricing: TBD (likely $5-10/month for premium)"
     },
     {
+      "id": "PHASE3-WEB-025",
+      "category": "Phase 3: Web - Landing Page",
+      "description": "Create landing page (/) with app overview, feature comparison, and clear paths for free vs premium users",
+      "acceptanceCriteria": [
+        "Landing page at root route (/) with hero section",
+        "Hero: 'Katasumi - Master Keyboard Shortcuts Across All Your Apps'",
+        "Brief description: 'Search and discover keyboard shortcuts for 100+ apps. Available as terminal (TUI) and web interface.'",
+        "Features section highlights: 'Multi-app search', 'AI-powered discovery', 'Cloud sync (Premium)', 'Cross-platform'",
+        "Clear two-tier comparison: 'Free' vs 'Premium'",
+        "Free tier: 'Local usage', 'Use your own AI API key', 'Full search functionality', 'Open source' with link to GitHub repo",
+        "Premium tier: 'Cloud sync', 'Built-in AI (100 queries/day)', 'Multi-device sync', 'No API key setup required'",
+        "CTA buttons: 'Get Started (Free)' → links to GitHub README for TUI setup, 'Sign Up for Premium' → /signup page",
+        "GitHub link prominent: 'View on GitHub' button in header or hero",
+        "Screenshots or demo GIF showing TUI and web interface",
+        "Footer with links: GitHub, Documentation, Contact",
+        "Responsive design works on mobile and desktop",
+        "SEO meta tags: title, description, og:image"
+      ],
+      "stepsToVerify": [
+        "Navigate to / and verify landing page loads",
+        "Verify hero section with clear headline and description",
+        "Verify features section highlights key capabilities",
+        "Verify two-tier comparison clearly shows Free vs Premium",
+        "Click 'Get Started (Free)' and verify redirect to GitHub README",
+        "Click 'Sign Up for Premium' and verify redirect to /signup",
+        "Click 'View on GitHub' and verify opens joshpitkin/katasumi repo",
+        "Verify screenshots/demo showing both TUI and web interface",
+        "Check mobile layout and verify responsive design works",
+        "Inspect page source and verify SEO meta tags present",
+        "Verify footer links work: GitHub, docs, contact",
+        "Test on different screen sizes (mobile, tablet, desktop)"
+      ],
+      "passes": false,
+      "priority": 2,
+      "priorityRationale": "Essential for marketing and user onboarding. Landing page is first impression and needs to clearly communicate value proposition and paths for both free and premium users.",
+      "dependencies": [
+        "PHASE1-PREMIUM-001"
+      ],
+      "reportedDate": "2026-02-07",
+      "technicalNotes": "Implementation:\n1. Create app/page.tsx as landing page (move current search to /search)\n2. Use shadcn/ui components for hero, features grid, comparison table\n3. Tailwind for responsive layout\n4. Next.js Image component for screenshots\n5. next-seo for meta tags\n6. GitHub repo link: https://github.com/joshpitkin/katasumi\n7. Free tier CTA links to: https://github.com/joshpitkin/katasumi#readme\n8. Premium CTA links to: /signup\n9. Consider using Framer Motion for subtle animations\n10. Screenshot tool: carbon.now.sh for code/TUI screenshots"
+    },
+    {
       "id": "PHASE3-WEB-022",
       "category": "Phase 3: Web - App-First AI Discovery Button",
       "description": "Show 'Use AI to search for shortcuts' button when user types app name not in database, trigger AI web scraping",
@@ -2446,7 +2487,7 @@
         "Review and confirm adding shortcuts",
         "Verify shortcuts appear in app-first mode for that app",
         "Test with invalid app name (e.g., 'asdfghj') and verify graceful handling",
-        "Test rate limiting for free users (5 queries/day)",
+        "Test rate limiting for premium users using built-in AI (100 scrapes/day)",
         "Create E2E test for AI scraping flow",
         "Run 'pnpm test --filter=@katasumi/web' and verify tests pass"
       ],
@@ -2454,8 +2495,8 @@
       "priority": 1,
       "priorityRationale": "Key AI feature that differentiates Katasumi. Enables discovery of shortcuts for long-tail apps not in curated database. This addresses the 'missing app' problem and makes AI mode actually useful.",
       "reportedDate": "2026-02-03",
-      "technicalNotes": "Requires new /api/ai/scrape endpoint that:\n1. Accepts app name and optional context (e.g., 'text editor', 'terminal')\n2. Uses AI to search web for official documentation\n3. Extracts keyboard shortcuts from documentation\n4. Returns structured data: app info + shortcuts array\n5. Rate limited: 5 scrapes/day for free, unlimited for premium\n6. Stores scraping results in ai_scrape_cache table to avoid duplicates",
-      "implementationDetails": "Implemented AI scraping feature: Created /api/ai/scrape endpoint with AI provider support (OpenAI, Anthropic, OpenRouter, Ollama), rate limiting (5/day for free users), and error handling. Created /api/shortcuts endpoint for saving scraped shortcuts. Updated AppSelector component with AI search button, authentication checks, loading states, and confirmation dialog. Added E2E test structure. All type checks pass."
+      "technicalNotes": "Requires new /api/ai/scrape endpoint that:\n1. Accepts app name and optional context (e.g., 'text editor', 'terminal')\n2. Uses AI to search web for official documentation\n3. Extracts keyboard shortcuts from documentation\n4. Returns structured data: app info + shortcuts array\n5. Rate limited: 100 scrapes/day for premium users using built-in AI, unlimited for enterprise, not tracked for users with personal API keys\n6. Stores scraping results in ai_scrape_cache table to avoid duplicates",
+      "implementationDetails": "Implemented AI scraping feature: Created /api/ai/scrape endpoint with AI provider support (OpenAI, Anthropic, OpenRouter, Ollama), rate limiting (100/day for premium users using built-in AI), and error handling. Created /api/shortcuts endpoint for saving scraped shortcuts. Updated AppSelector component with AI search button, authentication checks, loading states, and confirmation dialog. Added E2E test structure. All type checks pass."
     },
     {
       "id": "PHASE3-WEB-023",
@@ -2473,7 +2514,7 @@
         "When AI toggle OFF: button hidden, automatic search is keyword-based only",
         "Error handling: API failures, rate limits, invalid API key",
         "Success message shows 'AI-ranked results' or similar indicator",
-        "Free users: decrements AI query count, premium users: unlimited"
+        "Premium users using built-in AI: 100 queries/day limit, enterprise: unlimited, personal API key users: no tracking"
       ],
       "stepsToVerify": [
         "Switch to Full-Phrase mode",
@@ -2489,7 +2530,7 @@
         "Verify loading spinner and AI-ranked results",
         "Compare results with automatic keyword search (should be different/better)",
         "Toggle AI OFF and verify button disappears",
-        "Test rate limiting for free users",
+        "Test rate limiting for premium users using built-in AI (100 queries/day)",
         "Test with complex natural language query",
         "Create test for AI search button behavior",
         "Run 'pnpm test --filter=@katasumi/web' and verify tests pass"
