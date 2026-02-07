@@ -1811,8 +1811,10 @@
       "acceptanceCriteria": [
         "Tab key always toggles mode, even when search input has focus",
         "Tab does NOT cycle through form elements when in search input",
-        "Mode toggle preserves current search query",
-        "Mode toggle preserves selected platform",
+        "Mode toggle resets search query to start fresh in new mode",
+        "Mode toggle resets filters to start fresh in new mode",
+        "Mode toggle resets selected app to start fresh in new mode",
+        "Mode toggle preserves global settings (platform, AI enabled, etc.)",
         "Clear visual feedback when mode switches (animation/transition)",
         "After mode toggle, focus remains in search input (if was focused before)",
         "Works consistently in both App-First and Full-Phrase modes",
@@ -1823,11 +1825,12 @@
       "stepsToVerify": [
         "Focus search input in App-First mode",
         "Press Tab and verify mode switches to Full-Phrase",
-        "Verify search query preserved after toggle",
+        "Verify search query is reset (cleared) after toggle",
         "Verify focus stays in search input",
         "Press Tab again and verify mode switches back to App-First",
-        "Test with non-empty search query and verify query preserved",
-        "Test with platform filter active and verify filter preserved",
+        "Test with non-empty search query and verify query is reset on toggle",
+        "Test with platform filter active and verify platform is preserved (global setting)",
+        "Test with filters active and verify filters are reset on toggle",
         "Create test for Tab behavior with search input focused",
         "Run 'pnpm test --filter=@katasumi/web' and verify Tab toggle tests pass",
         "Test in Chrome, Firefox, Safari for consistent behavior"
@@ -1845,8 +1848,9 @@
         "Documented Ctrl+Tab for browser tab switching",
         "Documented Shift+Tab behavior as browser default",
         "Created __tests__/tab-toggle-mode.test.tsx: 9 passing tests",
-        "Tests verify mode toggle preserves query, platform, filters, and selected app",
-        "All existing tests still pass (44 total tests)",
+        "Tests verify mode toggle resets search state (query, filters, selectedApp) but preserves global settings (platform, aiEnabled)",
+        "Design decision: Mode toggle resets search context to provide clean slate in new mode",
+        "All existing tests still pass (72 total tests)",
         "TypeScript type checks pass"
       ],
       "completedAt": "2026-01-29T17:01:01.597Z"

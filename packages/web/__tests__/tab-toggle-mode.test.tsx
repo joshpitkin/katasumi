@@ -43,15 +43,15 @@ describe('Tab Toggle Mode During Input', () => {
     expect(useStore.getState().mode).toBe('app-first')
   })
 
-  it('should preserve search query when toggling mode', () => {
+  it('should reset search query when toggling mode', () => {
     const testQuery = 'test query'
     useStore.setState({ query: testQuery })
 
     // Toggle mode
     useStore.getState().toggleMode()
     
-    // Query should be preserved
-    expect(useStore.getState().query).toBe(testQuery)
+    // Query should be reset to start fresh in new mode
+    expect(useStore.getState().query).toBe('')
     expect(useStore.getState().mode).toBe('full-phrase')
   })
 
@@ -61,26 +61,27 @@ describe('Tab Toggle Mode During Input', () => {
     // Toggle mode
     useStore.getState().toggleMode()
     
-    // Platform should still be windows
+    // Platform should still be windows (global setting, not mode-specific)
     expect(useStore.getState().platform).toBe('windows')
     expect(useStore.getState().mode).toBe('full-phrase')
   })
 
-  it('should preserve selected app when toggling mode', () => {
+  it('should reset selected app when toggling mode', () => {
     useStore.setState({ selectedApp: 'vscode', mode: 'app-first' })
 
     // Toggle to full-phrase
     useStore.getState().toggleMode()
     expect(useStore.getState().mode).toBe('full-phrase')
-    expect(useStore.getState().selectedApp).toBe('vscode')
+    expect(useStore.getState().selectedApp).toBe(null)
 
-    // Toggle back to app-first
+    // Set app again and toggle back to app-first
+    useStore.setState({ selectedApp: 'vim' })
     useStore.getState().toggleMode()
     expect(useStore.getState().mode).toBe('app-first')
-    expect(useStore.getState().selectedApp).toBe('vscode')
+    expect(useStore.getState().selectedApp).toBe(null)
   })
 
-  it('should preserve filters when toggling mode', () => {
+  it('should reset filters when toggling mode', () => {
     const testFilters = {
       context: 'Editor',
       category: 'Navigation',
@@ -91,8 +92,8 @@ describe('Tab Toggle Mode During Input', () => {
     // Toggle mode
     useStore.getState().toggleMode()
     
-    // Filters should be preserved
-    expect(useStore.getState().filters).toEqual(testFilters)
+    // Filters should be reset to start fresh in new mode
+    expect(useStore.getState().filters).toEqual({})
     expect(useStore.getState().mode).toBe('full-phrase')
   })
 
@@ -108,7 +109,7 @@ describe('Tab Toggle Mode During Input', () => {
     expect(useStore.getState().mode).toBe('app-first')
   })
 
-  it('should not affect other state when toggling', () => {
+  it('should reset search state but preserve UI settings when toggling', () => {
     const initialState = {
       mode: 'app-first' as const,
       query: 'test',
@@ -127,15 +128,15 @@ describe('Tab Toggle Mode During Input', () => {
     
     const newState = useStore.getState()
     
-    // Only mode should change
+    // Mode should change, search state should reset, but UI settings preserved
     expect(newState.mode).toBe('full-phrase')
-    expect(newState.query).toBe(initialState.query)
-    expect(newState.selectedApp).toBe(initialState.selectedApp)
-    expect(newState.platform).toBe(initialState.platform)
-    expect(newState.results).toEqual(initialState.results)
-    expect(newState.filters).toEqual(initialState.filters)
-    expect(newState.aiEnabled).toBe(initialState.aiEnabled)
-    expect(newState.showHelp).toBe(initialState.showHelp)
+    expect(newState.query).toBe('') // Reset
+    expect(newState.selectedApp).toBe(null) // Reset
+    expect(newState.results).toEqual([]) // Reset
+    expect(newState.filters).toEqual({}) // Reset
+    expect(newState.platform).toBe(initialState.platform) // Preserved (global setting)
+    expect(newState.aiEnabled).toBe(initialState.aiEnabled) // Preserved (global setting)
+    expect(newState.showHelp).toBe(initialState.showHelp) // Preserved (global setting)
   })
 
   it('should allow multiple toggles in sequence', () => {
