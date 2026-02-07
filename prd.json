@@ -1039,7 +1039,7 @@
         "Run 'npm run test --workspace=@katasumi/tui' to execute login command tests",
         "Run 'npm test' from root to execute all package tests"
       ],
-      "passes": false,
+      "passes": true,
       "priority": 4,
       "priorityRationale": "Login command depends on sync API being ready",
       "implementationDetails": "Implemented katasumi login command with the following features:\n\n1. Command-line argument parsing in cli.tsx to route login command\n2. Created commands/login.ts module with:\n   - Interactive email/password prompts with masked password input\n   - --web flag for browser-based OAuth login\n   - --token flag for direct token input\n   - JWT token storage in ~/.katasumi/config.json with 600 permissions\n   - Token verification via /api/sync/status endpoint\n   - User info storage (id, email, tier) alongside token\n3. Updated config.ts with token management functions:\n   - saveToken(), loadToken(), loadUser(), clearAuth()\n4. Created comprehensive test suite (9 tests) covering:\n   - Config management and permissions\n   - API integration (login, error handling, token verification)\n   - Error handling (network errors, malformed JSON)\n\nAll acceptance criteria met:\n- Email and password prompts implemented\n- Password input masked via raw mode stdin handling\n- Success message displayed on login\n- Token stored in ~/.katasumi/config.json with 600 permissions\n- --web flag opens browser for OAuth login\n- Helpful error messages on failure\n- Token verified via API call before storage\n\nTests: 173 passed (including 9 new login command tests)\nType checks: All passing"
