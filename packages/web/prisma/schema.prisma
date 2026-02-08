@@ -156,3 +156,26 @@ model AppConfig {
   
   @@map("app_config")
 }
+
+// Subscriptions table - stores Stripe subscription data
+// NOTE: For MVP, premium users can be created manually via database
+// Stripe integration placeholder for future payment processing
+model Subscription {
+  id                   String    @id @default(uuid())
+  userId               String    @unique @map("user_id")
+  stripeCustomerId     String?   @unique @map("stripe_customer_id")
+  stripeSubscriptionId String?   @unique @map("stripe_subscription_id")
+  status               String    @default("free") // 'free' | 'premium' | 'cancelled' | 'expired'
+  currentPeriodStart   DateTime? @map("current_period_start")
+  currentPeriodEnd     DateTime? @map("current_period_end")
+  cancelAtPeriodEnd    Boolean   @default(false) @map("cancel_at_period_end")
+  
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+  
+  @@index([userId])
+  @@index([stripeCustomerId])
+  @@index([stripeSubscriptionId])
+  @@index([status])
+  @@map("subscriptions")
+}

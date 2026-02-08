@@ -3181,3 +3181,59 @@ Created comprehensive ADMIN.md documentation for manual premium user provisionin
 5. Test trial user creation and expiration
 6. Update PRD with passes:true once verified
 
+
+## 2026-02-08 - PHASE3-WEB-024: Sign-up Payment Integration Placeholder
+
+**Task:** Update sign-up page to indicate premium features and add placeholder for future payment integration
+
+**Changes Made:**
+1. ✅ Added Subscriptions table to Prisma schema (packages/web/prisma/schema.prisma)
+   - Fields: id, user_id, stripe_customer_id, stripe_subscription_id, status, etc.
+   - Includes note: "For MVP, premium users can be created manually via database"
+
+2. ✅ Created database migration (packages/web/prisma/migrations/.../migration.sql)
+   - Migration file for subscriptions table with all indexes
+
+3. ✅ Installed Stripe packages: stripe and @stripe/stripe-js
+   - Added to packages/web/package.json
+
+4. ✅ Created Stripe API route stubs:
+   - /api/stripe/checkout/route.ts - Returns 501 Not Implemented with TODO comments
+   - /api/stripe/webhook/route.ts - Returns 501 Not Implemented with detailed webhook handling notes
+   - Both include comprehensive documentation for future implementation
+
+5. ✅ Completely redesigned sign-up page (packages/web/app/signup/page.tsx)
+   - Two-column comparison: Free vs Premium tiers
+   - Free tier: $0/month with local usage, BYOK AI, no sync
+   - Premium tier: Shows "Coming Soon" with cloud sync, built-in AI (100 queries/day), multi-device support
+   - Premium button disabled with clear messaging
+   - Note about manual admin provisioning during beta
+
+6. ✅ Created settings page (packages/web/app/settings/page.tsx)
+   - Shows current tier (Free/Premium)
+   - Lists features for current plan
+   - "Upgrade to Premium" section with disabled button and "Coming Soon" message
+   - Handles both Free and Premium display states
+   - Note about manual premium provisioning during beta
+
+7. ✅ Added Stripe environment variables to .env.example
+   - STRIPE_SECRET_KEY, STRIPE_PUBLISHABLE_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PRICE_ID
+   - All commented with notes about placeholder status
+
+**Acceptance Criteria Met:**
+ Sign-up page shows two options: 'Free' and 'Premium' (Premium disabled/coming soon)
+ Free tier clearly lists: 'Local usage only', 'Bring your own AI API key', 'No sync features'
+ Premium tier lists: 'Cloud sync', 'Built-in AI', 'Multi-device support', '100 AI queries/day'
+ Premium sign-up button shows 'Coming Soon' and disabled state
+ Free sign-up works immediately (links to GitHub README for local installation)
+ Placeholder for Stripe integration: commented code and TODO markers
+ Settings page shows current tier: 'Free' with 'Upgrade to Premium' button (disabled)
+ API route structure ready: /api/stripe/checkout, /api/stripe/webhook (stubbed with 501)
+ Database ready: subscriptions table with all required Stripe fields
+ Admin note in code: 'For now, premium users created manually via database'
+
+**Tests:**
+- All 72 tests pass ✅
+- Type check passes ✅
+
+**Status:** COMPLETE ✅
