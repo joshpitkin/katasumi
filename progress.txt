@@ -2974,3 +2974,39 @@ Implemented built-in AI functionality for premium users, allowing them to use AI
 - Environment variable INTERNAL_AI_API_KEY should be set in .env
 - API key encryption can be implemented in AppConfig when rotating keys
 - TUI UI for displaying the toggle can be added in future settings menu
+
+## 2026-02-08T00:24:00Z - PHASE1-PREMIUM-004: AI Setup Documentation for Free Users
+
+**Task**: Add README section with instructions for free users to configure personal AI API key for TUI
+
+**Implementation**:
+- Added comprehensive "AI Setup for Free Users" section to README.md (lines 67-205)
+- Included cost estimate ($0.50-$2/month) prominently at the beginning
+- Created detailed table of AI providers (OpenAI, Anthropic, OpenRouter, Ollama) with links to:
+  - API key registration pages
+  - Pricing documentation
+- Documented three configuration methods:
+  1. Config file (~/.katasumi/config.json) - recommended approach
+  2. Environment variables (KATASUMI_AI_PROVIDER, KATASUMI_AI_KEY, etc.)
+  3. TUI commands (katasumi config set)
+- Provided configuration examples for all four supported providers
+- Added comprehensive troubleshooting section covering:
+  - Invalid API key errors
+  - Rate limit issues
+  - AI toggle problems
+  - Ollama connection issues
+- Included security best practices section with warnings about:
+  - Never committing config.json to version control
+  - Not sharing API keys publicly
+  - Setting spending limits
+  - Rotating keys if exposed
+- Added comparison table: Premium vs Free AI features
+- Updated table of contents to include new section
+
+**Testing**:
+- All type checks pass (core, tui, web packages)
+- All 110 tests pass successfully
+- README markdown validated
+
+**Status**: ✅ Complete - Ready for verification
+

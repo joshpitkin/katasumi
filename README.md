@@ -13,6 +13,12 @@ Like a helpful friend waiting in the corner of your workspace, Katasumi provides
 
 - [Philosophy](#-philosophy)
 - [Features](#-features)
+- [AI Setup for Free Users](#-ai-setup-for-free-users)
+  - [Getting Your API Key](#getting-your-api-key)
+  - [Configuration Methods](#configuration-methods)
+  - [Configuration Examples](#configuration-examples)
+  - [Troubleshooting](#troubleshooting)
+  - [Security Best Practices](#-security-best-practices)
 - [Architecture](#️-architecture)
 - [Getting Started](#-getting-started)
   - [Quick Install (TUI)](#quick-install-tui)
@@ -63,27 +69,192 @@ The name "katasumi" embodies our design philosophy:
 - 🤖 AI search with your own API key
 - 📝 Local shortcut creation and editing
 
-#### Setting Up AI for Free Users
+## 🤖 AI Setup for Free Users
 
-Free tier users can use AI-powered search by providing their own API key:
+Free tier users can access AI-powered shortcut search by configuring their personal API key. Premium users enjoy built-in AI with no setup required.
 
-**TUI (Terminal Interface):**
-1. Create/edit `~/.katasumi/config.json`:
+**💰 Cost Estimate:** Typical usage costs **$0.50-$2/month** with a personal API key, depending on your search frequency.
+
+### Getting Your API Key
+
+Choose one of these AI providers:
+
+| Provider | Get API Key | Pricing |
+|----------|-------------|---------|
+| **OpenAI** | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) | [View Pricing](https://openai.com/pricing) |
+| **Anthropic (Claude)** | [console.anthropic.com/settings/keys](https://console.anthropic.com/settings/keys) | [View Pricing](https://www.anthropic.com/pricing) |
+| **OpenRouter** | [openrouter.ai/keys](https://openrouter.ai/keys) | [View Pricing](https://openrouter.ai/docs#models) |
+| **Ollama** | [Run locally](https://ollama.ai/) | Free (runs on your machine) |
+
+### Configuration Methods
+
+#### Method 1: Config File (Recommended)
+
+1. Create the configuration directory:
+   ```bash
+   mkdir -p ~/.katasumi
+   ```
+
+2. Create `~/.katasumi/config.json`:
+   ```json
+   {
+     "ai": {
+       "provider": "openai",
+       "apiKey": "sk-your-api-key-here",
+       "model": "gpt-4"
+     }
+   }
+   ```
+
+3. Launch Katasumi and press **F4** or **'a'** to toggle AI search mode
+
+#### Method 2: Environment Variables
+
+Set environment variables before running Katasumi:
+
+```bash
+export KATASUMI_AI_PROVIDER=openai
+export KATASUMI_AI_KEY=sk-your-api-key-here
+export KATASUMI_AI_MODEL=gpt-4
+
+# Optional: Custom API endpoint
+export KATASUMI_AI_BASE_URL=https://api.openai.com/v1
+```
+
+Then launch Katasumi as usual:
+```bash
+katasumi
+```
+
+#### Method 3: TUI Command (Interactive)
+
+Launch Katasumi and use the config command:
+
+```bash
+katasumi config set ai.provider openai
+katasumi config set ai.apiKey sk-your-api-key-here
+katasumi config set ai.model gpt-4
+```
+
+### Configuration Examples
+
+#### OpenAI (GPT-4)
 ```json
 {
   "ai": {
     "provider": "openai",
-    "apiKey": "your-api-key-here",
-    "model": "gpt-4"
+    "apiKey": "sk-...",
+    "model": "gpt-4",
+    "baseUrl": "https://api.openai.com/v1"
   }
 }
 ```
 
-**Web Interface:**
-- Include `userApiKey` and `aiProvider` in your API requests to `/api/ai`
-- Supported providers: `openai`, `anthropic`, `openrouter`, `ollama`
+#### Anthropic (Claude)
+```json
+{
+  "ai": {
+    "provider": "anthropic",
+    "apiKey": "sk-ant-...",
+    "model": "claude-3-opus-20240229"
+  }
+}
+```
 
-Premium users can use built-in AI without any configuration.
+#### OpenRouter (Multiple Models)
+```json
+{
+  "ai": {
+    "provider": "openrouter",
+    "apiKey": "sk-or-...",
+    "model": "anthropic/claude-3-opus",
+    "baseUrl": "https://openrouter.ai/api/v1"
+  }
+}
+```
+
+#### Ollama (Local)
+```json
+{
+  "ai": {
+    "provider": "ollama",
+    "model": "llama2",
+    "baseUrl": "http://localhost:11434/v1"
+  }
+}
+```
+*Note: Ollama runs locally and doesn't require an API key*
+
+### Using AI in the TUI
+
+1. **Launch Katasumi**: `katasumi`
+2. **Toggle AI Mode**: Press **F4** or **'a'** key
+3. **Search with AI**: Type natural language queries like:
+   - "shortcuts for commenting code in vim"
+   - "how to split window in tmux"
+   - "vscode keyboard shortcuts for debugging"
+
+### Web Interface Usage
+
+For API requests to `/api/ai`, include your API key:
+
+```javascript
+fetch('/api/ai', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    query: "vim shortcuts for navigation",
+    userApiKey: "sk-...",
+    aiProvider: "openai"
+  })
+})
+```
+
+### Troubleshooting
+
+#### "Invalid API Key" Error
+- **Check your API key** is correct and active
+- **Verify provider** matches your API key type (OpenAI keys don't work with Anthropic, etc.)
+- **Check account billing** - ensure your provider account has billing enabled
+
+#### "Rate Limit Exceeded" Error
+- **Wait a few minutes** and try again
+- **Upgrade your API plan** with your provider
+- **Reduce query frequency** or switch to a different provider
+
+#### AI Toggle Not Working
+- **Verify configuration** exists at `~/.katasumi/config.json`
+- **Check permissions**: `chmod 600 ~/.katasumi/config.json`
+- **Validate JSON syntax** using `jq . ~/.katasumi/config.json`
+
+#### Ollama Connection Issues
+- **Start Ollama**: `ollama serve`
+- **Pull a model**: `ollama pull llama2`
+- **Check baseUrl** points to `http://localhost:11434/v1`
+
+### 🔒 Security Best Practices
+
+⚠️ **Important Security Notes:**
+
+- **Never commit** `config.json` to version control
+- **Never share** your API keys publicly or in screenshots
+- **Use environment variables** in CI/CD pipelines instead of config files
+- **Rotate keys regularly** if you suspect they've been exposed
+- **Set spending limits** in your AI provider account settings
+- **Use read-only keys** if your provider offers them
+
+### Premium vs Free AI Features
+
+| Feature | Free (Your API Key) | Premium (Built-in) |
+|---------|---------------------|-------------------|
+| AI Search | ✅ Yes | ✅ Yes |
+| Configuration Required | ✅ Yes | ❌ No |
+| API Key Management | 👤 You manage | 🏢 We manage |
+| Cost | 💵 You pay provider | 💎 Included in subscription |
+| Query Limits | Provider-dependent | ♾️ Unlimited |
+| Setup Time | ~5 minutes | ⚡ Instant |
+
+---
 
 ## 🏗️ Architecture
 
