@@ -9,6 +9,7 @@ interface GlobalKeybindingsProps {
   onShowPlatformSelector: () => void;
   onShowFilterModal: () => void;
   onQuit: () => void;
+  onSync: () => void;
   showFilterModal: boolean;
   showHelp: boolean;
   showPlatformSelector: boolean;
@@ -21,6 +22,7 @@ export function GlobalKeybindings({
   onShowPlatformSelector,
   onShowFilterModal,
   onQuit,
+  onSync,
   showFilterModal,
   showHelp,
   showPlatformSelector,
@@ -68,6 +70,8 @@ export function GlobalKeybindings({
       onToggleAI();
     } else if (input === 'p') {
       onShowPlatformSelector();
+    } else if (input === 's') {
+      onSync();
     }
   });
 

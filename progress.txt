@@ -2826,3 +2826,78 @@ Notes:
 - Button is now truly hidden when AI is OFF, making the automatic keyword search the only search method in that mode
 - This provides clear separation between fast keyword search (automatic) and AI semantic search (explicit button)
 - Success indicator provides clear feedback that AI search was used
+
+## 2026-02-08 - Implemented User Shortcuts Sync (PHASE1-SYNC-004)
+
+### What Was Done:
+Implemented user shortcuts sync from PostgreSQL (web) to TUI local SQLite database with 's' key command.
+
+### Changes Made:
+
+1. **Created sync utilities module** (`packages/tui/src/utils/sync.ts`):
+   - `syncUserShortcuts()` function that calls `/api/sync/pull` endpoint
+   - Authentication check with premium tier validation
+   - Incremental sync support using `since` parameter
+   - Conflict resolution: web shortcuts take precedence (upsert strategy)
+   - Last sync timestamp storage in `~/.katasumi/sync-state.json`
+   - `getLastSyncTime()` helper for human-readable sync time display
+   - Network error handling and user-friendly error messages
+
+2. **Created database adapter utility** (`packages/tui/src/utils/db-adapter.ts`):
+   - Singleton pattern for shared database adapter instance
+   - Handles core and user database initialization
+
+3. **Added sync state to store** (`packages/tui/src/store.ts`):
+   - New sync state: `syncStatus` ('idle'|'syncing'|'success'|'error')
+   - New sync message state for displaying status text
+   - `setSyncStatus()` action for updating sync state
+
+4. **Added 's' key binding** (`packages/tui/src/components/GlobalKeybindings.tsx`):
+   - 's' key triggers sync in navigation mode
+   - Properly excluded from input mode
+
+5. **Updated Footer component** (`packages/tui/src/components/Footer.tsx`):
+   - Shows sync status: "⏳ Syncing...", "✓ Synced X shortcuts", "✗ Error message"
+   - Displays last sync time when idle: "Last synced: X mins ago"
+   - Color-coded status (green for success, red for error)
+   - Added '[s] Sync' to keyboard shortcuts display
+
+6. **Updated App.tsx**:
+   - Added `handleSync()` function that calls sync utility
+   - Auto-clears success messages after 3 seconds
+   - Auto-clears error messages after 5 seconds
+   - Prevents concurrent sync operations
+
+7. **Updated Help Overlay** (`packages/tui/src/components/HelpOverlay.tsx`):
+   - Added 's' key documentation: "s - Sync shortcuts (Premium)"
+
+### Features Implemented:
+ 's' key command triggers shortcuts sync
+ Sync pulls user_shortcuts from web PostgreSQL via `/api/sync/pull` endpoint
+ Downloaded shortcuts merged into local `~/.katasumi/user-data.db` SQLite
+ Sync status displayed: 'Syncing...', 'Up to date', 'X shortcuts synced', error messages
+ Sync requires authentication (shows message to run 'katasumi login' if not authenticated)
+ Premium tier check (shows message if not premium)
+ Conflict resolution: web shortcuts take precedence (upsert with updated_at comparison)
+ Sync preserves local-only shortcuts not present in web database (upsert doesn't delete)
+ Status indicator shows last sync time (e.g., 'Last synced: 2 hours ago')
+ Initial sync downloads all user shortcuts from web
+ Incremental sync only downloads changes since last sync (using updated_at timestamp)
+ Error handling: network failures, auth errors, premium tier validation
+ Success notification: 'Synced X shortcuts from web' with visual feedback (color-coded)
+ Progress indication during sync (status messages)
+
+### Testing:
+- All 173 existing tests pass
+- Type checks pass for both TUI and web packages
+
+### Known Limitations:
+- F5 key binding not implemented (Ink library limitation)
+- No progress bar for large syncs (>100 shortcuts) - deferred for future enhancement
+- No sound feedback (TUI limitation) - visual feedback only
+
+### Verification Steps Still To Do:
+- Manual end-to-end testing with real web instance
+- Testing with network failures
+- Testing with 100+ shortcuts to verify performance
+

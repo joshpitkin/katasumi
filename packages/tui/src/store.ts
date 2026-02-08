@@ -6,6 +6,8 @@ export type PlatformOption = Platform | 'all';
 
 type FocusSection = 'app-selector' | 'filters' | 'results';
 
+export type SyncStatus = 'idle' | 'syncing' | 'success' | 'error';
+
 interface AppState {
   // UI State
   mode: 'app-first' | 'full-phrase';
@@ -13,6 +15,10 @@ interface AppState {
   platform: PlatformOption;
   aiEnabled: boolean;
   isInputMode: boolean;
+  
+  // Sync State
+  syncStatus: SyncStatus;
+  syncMessage: string;
 
   // App-First Mode State
   focusSection: FocusSection;
@@ -39,6 +45,9 @@ interface AppState {
   setPlatform: (platform: PlatformOption) => void;
   toggleAI: () => void;
   setInputMode: (isInputMode: boolean) => void;
+  
+  // Sync Actions
+  setSyncStatus: (status: SyncStatus, message?: string) => void;
   
   // App-First Mode Actions
   setFocusSection: (section: FocusSection) => void;
@@ -75,6 +84,10 @@ export const useAppStore = create<AppState>((set, get) => ({
   platform: getInitialPlatform(),
   aiEnabled: false,
   isInputMode: false,
+  
+  // Sync State
+  syncStatus: 'idle',
+  syncMessage: '',
   
   // App-First Mode State
   focusSection: 'app-selector',
@@ -130,4 +143,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   setFilters: (filters) => set((state) => ({ filters: { ...state.filters, ...filters } })),
   setResults: (results) => set({ results }),
   selectShortcut: (shortcut) => set({ selectedShortcut: shortcut, view: shortcut ? 'detail' : 'results' }),
+  
+  // Sync Actions
+  setSyncStatus: (status, message = '') => set({ syncStatus: status, syncMessage: message }),
 }));

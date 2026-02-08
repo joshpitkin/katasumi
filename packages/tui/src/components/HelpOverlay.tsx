@@ -55,6 +55,7 @@ export function HelpOverlay({ onClose }: HelpOverlayProps) {
         <Text>  ?                Show this help</Text>
         <Text>  a                Toggle AI</Text>
         <Text>  p                Platform selector</Text>
+        <Text>  s                Sync shortcuts (Premium)</Text>
         <Text dimColor />
         <Text bold>Navigation:</Text>
         <Text>  /                Focus search input</Text>

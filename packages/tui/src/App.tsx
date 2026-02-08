@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Box } from 'ink';
 import { debugLog } from './utils/debug-logger.js';
 import { useAppStore } from './store.js';
+import { syncUserShortcuts } from './utils/sync.js';
+import { getDbAdapter } from './utils/db-adapter.js';
 import { Header } from './components/Header.js';
 import { Footer } from './components/Footer.js';
 import { AppFirstMode } from './components/AppFirstMode.js';
@@ -25,6 +27,9 @@ export default function App() {
   const toggleMode = useAppStore((state) => state.toggleMode);
   const toggleAI = useAppStore((state) => state.toggleAI);
   const setPlatform = useAppStore((state) => state.setPlatform);
+  const syncStatus = useAppStore((state) => state.syncStatus);
+  const syncMessage = useAppStore((state) => state.syncMessage);
+  const setSyncStatus = useAppStore((state) => state.setSyncStatus);
 
   const handleQuit = () => {
     process.exit(0);
@@ -48,6 +53,45 @@ export default function App() {
   const handlePlatformSelect = (newPlatform: typeof platform) => {
     setPlatform(newPlatform);
     setShowPlatformSelector(false);
+  };
+
+  const handleSync = async () => {
+    // Don't allow sync if already syncing
+    if (syncStatus === 'syncing') {
+      return;
+    }
+
+    setSyncStatus('syncing', 'Syncing shortcuts...');
+    
+    try {
+      const adapter = getDbAdapter();
+      const result = await syncUserShortcuts(adapter);
+      
+      if (result.success) {
+        setSyncStatus('success', result.message);
+        // Clear success message after 3 seconds
+        setTimeout(() => {
+          if (useAppStore.getState().syncStatus === 'success') {
+            setSyncStatus('idle');
+          }
+        }, 3000);
+      } else {
+        setSyncStatus('error', result.message);
+        // Clear error message after 5 seconds
+        setTimeout(() => {
+          if (useAppStore.getState().syncStatus === 'error') {
+            setSyncStatus('idle');
+          }
+        }, 5000);
+      }
+    } catch (error) {
+      setSyncStatus('error', 'Sync failed');
+      setTimeout(() => {
+        if (useAppStore.getState().syncStatus === 'error') {
+          setSyncStatus('idle');
+        }
+      }, 5000);
+    }
   };
 
   // Debug terminal dimensions
@@ -100,7 +144,7 @@ export default function App() {
         )}
       </Box>
 
-      <Footer mode={mode} selectedApp={selectedApp} />
+      <Footer mode={mode} selectedApp={selectedApp} syncStatus={syncStatus} syncMessage={syncMessage} />
 
       <GlobalKeybindings
         onToggleMode={toggleMode}
@@ -109,6 +153,7 @@ export default function App() {
         onShowPlatformSelector={handleShowPlatformSelector}
         onShowFilterModal={handleShowFilterModal}
         onQuit={handleQuit}
+        onSync={handleSync}
         showFilterModal={showFilterModal}
         showHelp={showHelp}
         showPlatformSelector={showPlatformSelector}

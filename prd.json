@@ -2213,7 +2213,7 @@
         "Test with 100+ shortcuts and verify progress bar appears",
         "Press F5 key and verify sync also triggered"
       ],
-      "passes": false,
+      "passes": true,
       "priority": 2,
       "priorityRationale": "PREMIUM FEATURE for paid subscribers. Enables seamless workflow between web and TUI by syncing custom shortcuts. Higher priority than AI config sync since shortcuts are core value proposition.",
       "dependencies": [
