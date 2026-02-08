@@ -18,6 +18,7 @@ model User {
   subscriptionStatus    String    @default("free") @map("subscription_status") // 'free' | 'premium' | 'enterprise'
   subscriptionExpiresAt DateTime? @map("subscription_expires_at")
   apiTokenHash          String?   @map("api_token_hash")
+  aiKeyMode             String    @default("personal") @map("ai_key_mode") // 'personal' | 'builtin'
   
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
@@ -124,14 +125,28 @@ model SyncLog {
 
 // AiUsage table - tracks AI query usage for rate limiting
 model AiUsage {
-  id        String   @id @default(uuid())
-  userId    String   @map("user_id")
-  query     String   // The search query that was made
-  timestamp DateTime @default(now())
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  query      String   // The search query that was made
+  timestamp  DateTime @default(now())
+  tokensUsed Int?     @map("tokens_used")
+  queryType  String?  @map("query_type") // 'search' | 'general'
   
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   @@index([userId])
   @@index([timestamp])
+  @@index([userId, timestamp])
   @@map("ai_usage")
+}
+
+// AppConfig table - stores encrypted application configuration
+model AppConfig {
+  id             String   @id @default(uuid())
+  key            String   @unique // e.g., 'internal_ai_key'
+  encryptedValue String   @map("encrypted_value")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  
+  @@map("app_config")
 }

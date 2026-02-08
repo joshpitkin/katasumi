@@ -30,6 +30,8 @@ export async function POST(request: NextRequest) {
     
     let userId: string | null = null;
     let isPremium = false;
+    let aiKeyMode = 'personal';
+    let isEnterprise = false;
     
     if (token && !isTokenInvalidated(token)) {
       const payload = verifyToken(token);
@@ -41,6 +43,7 @@ export async function POST(request: NextRequest) {
             subscriptionStatus: true,
             subscriptionExpiresAt: true,
             tier: true,
+            aiKeyMode: true,
           },
         });
         
@@ -49,12 +52,15 @@ export async function POST(request: NextRequest) {
           isPremium =
             (user.subscriptionStatus === 'premium' || user.subscriptionStatus === 'enterprise') &&
             (!user.subscriptionExpiresAt || user.subscriptionExpiresAt > new Date());
+          isEnterprise = user.subscriptionStatus === 'enterprise';
+          aiKeyMode = user.aiKeyMode || 'personal';
         }
       }
     }
     
     // Determine which API key to use
     let aiConfig: any;
+    let usingBuiltInAI = false;
     
     if (userApiKey) {
       // User provided their own API key (free tier or premium user preferring their own key)
@@ -63,8 +69,35 @@ export async function POST(request: NextRequest) {
         apiKey: userApiKey,
         timeout: 5000,
       };
-    } else if (isPremium) {
-      // Premium user using built-in AI
+    } else if (isPremium && aiKeyMode === 'builtin') {
+      // Premium user using built-in AI - check rate limit first
+      if (!isEnterprise) {
+        // Check daily usage for premium (100/day limit)
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const usageCount = await prisma.aiUsage.count({
+          where: {
+            userId: userId!,
+            timestamp: { gte: today },
+          },
+        });
+        
+        if (usageCount >= 100) {
+          return NextResponse.json(
+            {
+              error: 'Rate limit exceeded',
+              message: 'Premium tier is limited to 100 AI queries per day. Upgrade to Enterprise for unlimited queries.',
+              usageToday: usageCount,
+              limit: 100,
+              upgradeUrl: '/pricing',
+            },
+            { status: 429 }
+          );
+        }
+      }
+      
+      // Use internal API key
       const aiProvider = (process.env.AI_PROVIDER || 'openai') as 'openai' | 'anthropic' | 'openrouter' | 'ollama';
       aiConfig = {
         provider: aiProvider,
@@ -73,13 +106,16 @@ export async function POST(request: NextRequest) {
         baseUrl: process.env.AI_BASE_URL,
         timeout: parseInt(process.env.AI_TIMEOUT || '5000'),
       };
+      usingBuiltInAI = true;
     } else {
-      // Free user without API key
+      // Free user or premium user with personal mode but no key provided
       return NextResponse.json(
         {
           error: 'AI API key required',
-          message: 'Free tier requires you to provide your own AI API key. Premium users can use built-in AI.',
-          upgradeUrl: '/pricing',
+          message: isPremium 
+            ? 'Enable "Use Built-in AI" in settings or provide your own API key.'
+            : 'Free tier requires you to provide your own AI API key. Premium users can use built-in AI.',
+          upgradeUrl: isPremium ? undefined : '/pricing',
           hint: 'Provide "userApiKey" and "aiProvider" (openai/anthropic/openrouter) in request body',
         },
         { status: 403 }
@@ -113,7 +149,7 @@ export async function POST(request: NextRequest) {
       results,
       enhanced: true,
       provider: aiConfig.provider,
-      usingBuiltInAI: !userApiKey && isPremium,
+      usingBuiltInAI,
     });
   } catch (error) {
     console.error('AI search error:', error);

@@ -5,6 +5,17 @@ import { useStore } from '@/lib/store'
 import { loadAIConfig, saveAIConfig, isAIConfigured, type AIConfig } from '@/lib/config'
 import type { AIProvider } from '@katasumi/core'
 
+interface UserSettings {
+  isPremium: boolean
+  isEnterprise: boolean
+  aiKeyMode: string
+  aiUsage: {
+    usedToday: number
+    dailyLimit: number | null
+    unlimited: boolean
+  }
+}
+
 export function SettingsOverlay() {
   const setShowSettings = useStore((state) => state.setShowSettings)
   const [provider, setProvider] = useState<AIProvider>('openai')
@@ -14,6 +25,8 @@ export function SettingsOverlay() {
   const [testStatus, setTestStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle')
   const [testMessage, setTestMessage] = useState('')
   const [isSaved, setIsSaved] = useState(false)
+  const [userSettings, setUserSettings] = useState<UserSettings | null>(null)
+  const [useBuiltInAI, setUseBuiltInAI] = useState(false)
 
   useEffect(() => {
     const config = loadAIConfig()
@@ -23,7 +36,59 @@ export function SettingsOverlay() {
       setModel(config.model || '')
       setBaseUrl(config.baseUrl || '')
     }
+    
+    // Fetch user settings if authenticated
+    const token = localStorage.getItem('auth_token')
+    if (token) {
+      fetchUserSettings(token)
+    }
   }, [])
+  
+  const fetchUserSettings = async (token: string) => {
+    try {
+      const response = await fetch('/api/user/settings', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setUserSettings(data)
+        setUseBuiltInAI(data.aiKeyMode === 'builtin')
+      }
+    } catch (error) {
+      console.error('Failed to fetch user settings:', error)
+    }
+  }
+  
+  const handleBuiltInAIToggle = async (enabled: boolean) => {
+    const token = localStorage.getItem('auth_token')
+    if (!token) return
+    
+    try {
+      const response = await fetch('/api/user/settings', {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ aiKeyMode: enabled ? 'builtin' : 'personal' }),
+      })
+      
+      if (response.ok) {
+        setUseBuiltInAI(enabled)
+        if (userSettings) {
+          setUserSettings({ ...userSettings, aiKeyMode: enabled ? 'builtin' : 'personal' })
+        }
+      } else {
+        const data = await response.json()
+        alert(data.error || 'Failed to update settings')
+      }
+    } catch (error) {
+      console.error('Failed to update AI key mode:', error)
+      alert('Failed to update settings')
+    }
+  }
 
   const handleSave = () => {
     const config: AIConfig = {
@@ -134,10 +199,73 @@ export function SettingsOverlay() {
               AI Configuration
             </h3>
             
-            {!isAIConfigured() && (
+            {/* Premium Built-in AI Toggle */}
+            {userSettings?.isPremium && (
+              <div className="mb-6 p-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h4 className="font-semibold text-gray-900 dark:text-white">
+                        Built-in AI {userSettings.isEnterprise ? '(Enterprise)' : '(Premium)'}
+                      </h4>
+                      <span className="px-2 py-0.5 text-xs font-medium bg-purple-600 text-white rounded">
+                        {userSettings.isEnterprise ? 'ENTERPRISE' : 'PREMIUM'}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
+                      Use Katasumi's built-in AI without providing your own API key. 
+                      {userSettings.isEnterprise 
+                        ? ' Enterprise users have unlimited queries.' 
+                        : ' Premium users get 100 AI queries per day.'}
+                    </p>
+                    {!userSettings.isEnterprise && userSettings.aiUsage && (
+                      <div className="text-sm">
+                        <span className="font-medium text-gray-900 dark:text-white">
+                          Usage today: {userSettings.aiUsage.usedToday}/{userSettings.aiUsage.dailyLimit}
+                        </span>
+                        {userSettings.aiUsage.usedToday >= (userSettings.aiUsage.dailyLimit || 100) && (
+                          <span className="ml-2 text-red-600 dark:text-red-400">
+                            (Limit reached)
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <label className="flex items-center cursor-pointer ml-4">
+                    <div className="relative">
+                      <input
+                        type="checkbox"
+                        checked={useBuiltInAI}
+                        onChange={(e) => handleBuiltInAIToggle(e.target.checked)}
+                        className="sr-only"
+                      />
+                      <div className={`block w-14 h-8 rounded-full transition ${
+                        useBuiltInAI ? 'bg-purple-600' : 'bg-gray-300 dark:bg-gray-600'
+                      }`}></div>
+                      <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition transform ${
+                        useBuiltInAI ? 'translate-x-6' : ''
+                      }`}></div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            )}
+            
+            {!isAIConfigured() && !useBuiltInAI && (
               <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
                 <p className="text-sm text-blue-800 dark:text-blue-300">
-                  Configure an AI provider to enable AI-powered semantic search
+                  {userSettings?.isPremium 
+                    ? 'Enable built-in AI above or configure your own AI provider below'
+                    : 'Configure an AI provider to enable AI-powered semantic search'
+                  }
+                </p>
+              </div>
+            )}
+            
+            {useBuiltInAI && (
+              <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
+                <p className="text-sm text-green-800 dark:text-green-300">
+                  ✓ Built-in AI is active. Personal API key configuration is optional.
                 </p>
               </div>
             )}
@@ -253,9 +381,13 @@ export function SettingsOverlay() {
               Privacy Notice
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              When AI is enabled, your search queries are sent to the selected AI provider to improve search relevance. 
-              Your API key and configurations are stored locally and never sent to our servers.
-              For complete privacy, use Ollama with a local model.
+              When AI is enabled, your search queries are sent to the selected AI provider to improve search relevance.
+              {userSettings?.isPremium && useBuiltInAI ? (
+                <> Premium users using built-in AI have their queries processed through our secure infrastructure.</>
+              ) : (
+                <> Your API key and configurations are stored locally and never sent to our servers.</>
+              )}
+              {' '}For complete privacy, use Ollama with a local model.
             </p>
           </section>
         </div>

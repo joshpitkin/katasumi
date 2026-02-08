@@ -17,11 +17,14 @@ interface Config {
   aiEnabled?: boolean;
   mode?: 'app-first' | 'full-phrase';
   ai?: AIConfig;
+  aiKeyMode?: 'personal' | 'builtin';
   token?: string;
   user?: {
     id: string;
     email: string;
     tier: string;
+    isPremium?: boolean;
+    isEnterprise?: boolean;
   };
 }
 
@@ -77,7 +80,14 @@ export function loadAIConfig(): AIConfig | undefined {
 }
 
 export function isAIConfigured(): boolean {
-  const aiConfig = loadAIConfig();
+  const config = loadConfig();
+  const aiConfig = config.ai;
+  
+  // Check if using built-in AI
+  if (config.aiKeyMode === 'builtin' && config.user?.isPremium) {
+    return true;
+  }
+  
   if (!aiConfig) return false;
   
   // Ollama doesn't require an API key
@@ -87,7 +97,7 @@ export function isAIConfigured(): boolean {
   return !!aiConfig.apiKey && aiConfig.apiKey.trim().length > 0;
 }
 
-export function saveToken(token: string, user?: { id: string; email: string; tier: string }): void {
+export function saveToken(token: string, user?: { id: string; email: string; tier: string; isPremium?: boolean; isEnterprise?: boolean }): void {
   const config = loadConfig();
   config.token = token;
   if (user) {
@@ -101,7 +111,7 @@ export function loadToken(): string | undefined {
   return config.token;
 }
 
-export function loadUser(): { id: string; email: string; tier: string } | undefined {
+export function loadUser(): { id: string; email: string; tier: string; isPremium?: boolean; isEnterprise?: boolean } | undefined {
   const config = loadConfig();
   return config.user;
 }
@@ -111,4 +121,13 @@ export function clearAuth(): void {
   delete config.token;
   delete config.user;
   saveConfig(config);
+}
+
+export function saveAIKeyMode(mode: 'personal' | 'builtin'): void {
+  saveConfig({ aiKeyMode: mode });
+}
+
+export function loadAIKeyMode(): 'personal' | 'builtin' | undefined {
+  const config = loadConfig();
+  return config.aiKeyMode;
 }

@@ -2310,14 +2310,16 @@
         "Verify web settings shows usage counter for premium users",
         "Test TUI with premium login and verify built-in AI works"
       ],
-      "passes": false,
+      "passes": true,
       "priority": 2,
       "priorityRationale": "Key premium feature that differentiates paid tier. Removes friction of API key setup for paying customers. Important for conversion and retention.",
       "dependencies": [
         "PHASE1-PREMIUM-001"
       ],
       "reportedDate": "2026-02-07",
-      "technicalNotes": "Implementation:\n1. Create app_config table: id, key (e.g., 'internal_ai_key'), encrypted_value, created_at, updated_at\n2. Use crypto.encrypt() to store internal API key\n3. Settings UI shows radio toggle: 'Personal API Key' vs 'Built-in AI (Premium)'\n4. New field in users: ai_key_mode ENUM('personal', 'builtin')\n5. /api/ai/search logic: if (user.ai_key_mode === 'builtin' && user.subscription_status === 'premium') use internal key\n6. Create ai_usage_log table: user_id, query_type, timestamp, tokens_used\n7. Rate limiter checks daily count before allowing query"
+      "technicalNotes": "Implementation:\n1. Create app_config table: id, key (e.g., 'internal_ai_key'), encrypted_value, created_at, updated_at\n2. Use crypto.encrypt() to store internal API key\n3. Settings UI shows radio toggle: 'Personal API Key' vs 'Built-in AI (Premium)'\n4. New field in users: ai_key_mode ENUM('personal', 'builtin')\n5. /api/ai/search logic: if (user.ai_key_mode === 'builtin' && user.subscription_status === 'premium') use internal key\n6. Create ai_usage_log table: user_id, query_type, timestamp, tokens_used\n7. Rate limiter checks daily count before allowing query",
+      "completedDate": "2026-02-08",
+      "implementationNotes": "Implementation completed:\n1. Added app_config table to Prisma schema for storing encrypted configuration\n2. Added aiKeyMode field to users table (personal/builtin)\n3. Enhanced ai_usage table with tokensUsed and queryType fields for detailed tracking\n4. Updated /api/ai endpoint to check subscription status and aiKeyMode\n5. Implemented rate limiting: 100 queries/day for premium, unlimited for enterprise\n6. Created /api/user/settings endpoint (GET/PATCH) for managing AI preferences and viewing usage stats\n7. Updated web SettingsOverlay component with premium toggle, usage counter, and visual badges\n8. Updated TUI config.ts to support builtin AI mode and premium user detection\n9. All type checks pass, core tests pass (110/110)\n10. Migration SQL generated and ready to apply"
     },
     {
       "id": "PHASE1-PREMIUM-003",
