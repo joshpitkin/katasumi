@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { extractToken, verifyToken, isTokenInvalidated } from '@/lib/auth';
+import { requirePremium } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 
 interface ShortcutInput {
@@ -25,34 +25,16 @@ interface ShortcutInput {
 /**
  * POST /api/sync/push
  * Push shortcuts to server
+ * PREMIUM FEATURE: Requires active premium subscription
  */
 export async function POST(request: NextRequest) {
   try {
-    // Verify authentication
-    const authHeader = request.headers.get('Authorization');
-    const token = extractToken(authHeader);
-    
-    if (!token) {
-      return NextResponse.json(
-        { error: 'No token provided' },
-        { status: 401 }
-      );
+    // Verify premium access
+    const authResult = await requirePremium(request, prisma);
+    if (authResult instanceof NextResponse) {
+      return authResult; // Return error response
     }
-    
-    if (isTokenInvalidated(token)) {
-      return NextResponse.json(
-        { error: 'Token has been invalidated' },
-        { status: 401 }
-      );
-    }
-    
-    const payload = verifyToken(token);
-    if (!payload) {
-      return NextResponse.json(
-        { error: 'Invalid or expired token' },
-        { status: 401 }
-      );
-    }
+    const { user } = authResult;
     
     // Parse request body
     const body = await request.json();
@@ -74,7 +56,7 @@ export async function POST(request: NextRequest) {
         }
         
         const data = {
-          userId: payload.userId,
+          userId: user.id,
           app: shortcut.app,
           action: shortcut.action,
           keysMac: shortcut.keys.mac || null,
@@ -98,7 +80,7 @@ export async function POST(request: NextRequest) {
             where: { id: shortcut.id },
           });
           
-          if (existing && existing.userId !== payload.userId) {
+          if (existing && existing.userId !== user.id) {
             throw new Error('User does not own this shortcut');
           }
           
@@ -120,7 +102,7 @@ export async function POST(request: NextRequest) {
     // Log sync operation
     await prisma.syncLog.create({
       data: {
-        userId: payload.userId,
+        userId: user.id,
         operation: 'push',
         status: failed === 0 ? 'success' : failed === results.length ? 'failed' : 'partial',
         details: JSON.stringify({

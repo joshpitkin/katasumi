@@ -1,38 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { extractToken, verifyToken, isTokenInvalidated } from '@/lib/auth';
+import { requirePremium } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 
 /**
  * GET /api/sync/pull
  * Pull shortcuts modified since provided timestamp
+ * PREMIUM FEATURE: Requires active premium subscription
  */
 export async function GET(request: NextRequest) {
   try {
-    // Verify authentication
-    const authHeader = request.headers.get('Authorization');
-    const token = extractToken(authHeader);
-    
-    if (!token) {
-      return NextResponse.json(
-        { error: 'No token provided' },
-        { status: 401 }
-      );
+    // Verify premium access
+    const authResult = await requirePremium(request, prisma);
+    if (authResult instanceof NextResponse) {
+      return authResult; // Return error response
     }
-    
-    if (isTokenInvalidated(token)) {
-      return NextResponse.json(
-        { error: 'Token has been invalidated' },
-        { status: 401 }
-      );
-    }
-    
-    const payload = verifyToken(token);
-    if (!payload) {
-      return NextResponse.json(
-        { error: 'Invalid or expired token' },
-        { status: 401 }
-      );
-    }
+    const { user } = authResult;
     
     // Get since parameter from query string
     const searchParams = request.nextUrl.searchParams;
@@ -52,7 +34,7 @@ export async function GET(request: NextRequest) {
     // Pull shortcuts for this user
     const shortcuts = await prisma.userShortcut.findMany({
       where: {
-        userId: payload.userId,
+        userId: user.id,
         ...(since && { updatedAt: { gte: since } }),
       },
       orderBy: {

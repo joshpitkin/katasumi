@@ -8,77 +8,14 @@ import type { Platform } from '@katasumi/core/dist/types';
 /**
  * POST /api/ai
  * AI-enhanced search with natural language understanding
- * Rate limited to 5 queries per day for free users
+ * FREE users: Must provide their own API key in request body
+ * PREMIUM users: Can use built-in AI with internal protected API key
  */
 export async function POST(request: NextRequest) {
   try {
-    // Verify authentication
-    const authHeader = request.headers.get('Authorization');
-    const token = extractToken(authHeader);
-    
-    if (!token) {
-      return NextResponse.json(
-        { error: 'Authentication required for AI search' },
-        { status: 401 }
-      );
-    }
-    
-    if (isTokenInvalidated(token)) {
-      return NextResponse.json(
-        { error: 'Token has been invalidated' },
-        { status: 401 }
-      );
-    }
-    
-    const payload = verifyToken(token);
-    if (!payload) {
-      return NextResponse.json(
-        { error: 'Invalid or expired token' },
-        { status: 401 }
-      );
-    }
-    
-    // Get user to check tier
-    const user = await prisma.user.findUnique({
-      where: { id: payload.userId },
-    });
-    
-    if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
-    }
-    
-    // Check rate limit for free users
-    if (user.tier === 'free') {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      const usageCount = await prisma.aiUsage.count({
-        where: {
-          userId: payload.userId,
-          timestamp: {
-            gte: today,
-          },
-        },
-      });
-      
-      if (usageCount >= 5) {
-        return NextResponse.json(
-          { 
-            error: 'Daily AI query limit reached. Free users are limited to 5 AI queries per day. Upgrade to Pro for unlimited queries.',
-            limit: 5,
-            used: usageCount,
-          },
-          { status: 429 }
-        );
-      }
-    }
-    
-    // Parse request body
+    // Parse request body first to check for user-provided API key
     const body = await request.json();
-    const { query, platform, app, category } = body;
+    const { query, platform, app, category, userApiKey, aiProvider: userProvider } = body;
     
     if (!query || typeof query !== 'string') {
       return NextResponse.json(
@@ -87,20 +24,71 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    // Check if user is authenticated
+    const authHeader = request.headers.get('Authorization');
+    const token = extractToken(authHeader);
+    
+    let userId: string | null = null;
+    let isPremium = false;
+    
+    if (token && !isTokenInvalidated(token)) {
+      const payload = verifyToken(token);
+      if (payload) {
+        const user = await prisma.user.findUnique({
+          where: { id: payload.userId },
+          select: {
+            id: true,
+            subscriptionStatus: true,
+            subscriptionExpiresAt: true,
+            tier: true,
+          },
+        });
+        
+        if (user) {
+          userId = user.id;
+          isPremium =
+            (user.subscriptionStatus === 'premium' || user.subscriptionStatus === 'enterprise') &&
+            (!user.subscriptionExpiresAt || user.subscriptionExpiresAt > new Date());
+        }
+      }
+    }
+    
+    // Determine which API key to use
+    let aiConfig: any;
+    
+    if (userApiKey) {
+      // User provided their own API key (free tier or premium user preferring their own key)
+      aiConfig = {
+        provider: (userProvider || 'openai') as 'openai' | 'anthropic' | 'openrouter' | 'ollama',
+        apiKey: userApiKey,
+        timeout: 5000,
+      };
+    } else if (isPremium) {
+      // Premium user using built-in AI
+      const aiProvider = (process.env.AI_PROVIDER || 'openai') as 'openai' | 'anthropic' | 'openrouter' | 'ollama';
+      aiConfig = {
+        provider: aiProvider,
+        apiKey: process.env.AI_API_KEY,
+        model: process.env.AI_MODEL,
+        baseUrl: process.env.AI_BASE_URL,
+        timeout: parseInt(process.env.AI_TIMEOUT || '5000'),
+      };
+    } else {
+      // Free user without API key
+      return NextResponse.json(
+        {
+          error: 'AI API key required',
+          message: 'Free tier requires you to provide your own AI API key. Premium users can use built-in AI.',
+          upgradeUrl: '/pricing',
+          hint: 'Provide "userApiKey" and "aiProvider" (openai/anthropic/openrouter) in request body',
+        },
+        { status: 403 }
+      );
+    }
+    
     // Initialize AI search engine
     const dbUrl = process.env.DATABASE_URL || 'postgres://user:password@localhost:5432/katasumi';
     const adapter = new PostgresAdapter(dbUrl);
-    
-    // Get AI provider config from environment
-    const aiProvider = (process.env.AI_PROVIDER || 'openai') as 'openai' | 'anthropic' | 'openrouter' | 'ollama';
-    const aiConfig = {
-      provider: aiProvider,
-      apiKey: process.env.AI_API_KEY,
-      model: process.env.AI_MODEL,
-      baseUrl: process.env.AI_BASE_URL,
-      timeout: parseInt(process.env.AI_TIMEOUT || '5000'),
-    };
-    
     const aiEngine = new AISearchEngine(aiConfig, adapter);
     
     // Perform AI-enhanced search
@@ -111,27 +99,30 @@ export async function POST(request: NextRequest) {
     
     const results = await aiEngine.semanticSearch(query, filters, 10);
     
-    // Log AI usage for rate limiting
-    await prisma.aiUsage.create({
-      data: {
-        userId: payload.userId,
-        query,
-      },
-    });
+    // Log AI usage for rate limiting (only for authenticated users)
+    if (userId) {
+      await prisma.aiUsage.create({
+        data: {
+          userId,
+          query,
+        },
+      });
+    }
     
     return NextResponse.json({
       results,
       enhanced: true,
-      provider: aiProvider,
+      provider: aiConfig.provider,
+      usingBuiltInAI: !userApiKey && isPremium,
     });
   } catch (error) {
     console.error('AI search error:', error);
     
     // Check if it's an AI provider error
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    if (errorMessage.includes('API key') || errorMessage.includes('provider')) {
+    if (errorMessage.includes('API key') || errorMessage.includes('provider') || errorMessage.includes('401')) {
       return NextResponse.json(
-        { error: 'AI service unavailable. Please try keyword search instead.' },
+        { error: 'AI service unavailable or invalid API key. Please check your API key or try keyword search instead.' },
         { status: 503 }
       );
     }

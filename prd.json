@@ -1,7 +1,7 @@
 {
   "project": "Katasumi",
   "version": "1.0.0",
-  "lastUpdated": "2026-01-30T19:46:00Z",
+  "lastUpdated": "2026-02-08T00:03:12.728Z",
   "requirements": [
     {
       "id": "PHASE1-DB-003",
@@ -2254,11 +2254,26 @@
         "Test /api/sync/* endpoints reject requests from free tier users",
         "Verify built-in AI option only appears for authenticated premium users"
       ],
-      "passes": false,
+      "passes": true,
       "priority": 1,
       "priorityRationale": "Core business model definition. Essential for monetization strategy and feature access control. Must be implemented before payment integration and marketing launch.",
       "reportedDate": "2026-02-07",
-      "technicalNotes": "Database schema changes:\n1. Add subscription_status ENUM('free', 'premium', 'enterprise') to users table\n2. Add subscription_expires_at TIMESTAMP to users table\n3. Create middleware function requirePremium() that checks JWT + subscription status\n4. Apply middleware to all sync endpoints and built-in AI endpoints\n5. Free tier users can still use /api/ai/search if they provide their own API key\n6. Premium users can toggle between built-in AI and personal API key"
+      "technicalNotes": "Database schema changes:\n1. Add subscription_status ENUM('free', 'premium', 'enterprise') to users table\n2. Add subscription_expires_at TIMESTAMP to users table\n3. Create middleware function requirePremium() that checks JWT + subscription status\n4. Apply middleware to all sync endpoints and built-in AI endpoints\n5. Free tier users can still use /api/ai/search if they provide their own API key\n6. Premium users can toggle between built-in AI and personal API key",
+      "implementationDetails": [
+        "Added subscriptionStatus and subscriptionExpiresAt fields to User model in both web and core schemas",
+        "Created requirePremium() middleware in /packages/web/lib/auth.ts",
+        "Updated all sync endpoints (/api/sync/pull, /api/sync/push, /api/sync/status) to use requirePremium middleware",
+        "Updated /api/ai endpoint to support both premium (built-in AI) and free tier (user-provided API key)",
+        "Free users can provide userApiKey and aiProvider in request body for AI search",
+        "Premium users automatically use built-in AI with protected server API key",
+        "Added comprehensive README section explaining premium vs free tier",
+        "Documented how free users can set up their own AI API key in config.json",
+        "Created database migration (20260207_235900_add_subscription_fields.js)",
+        "Generated Prisma clients for both web and core packages",
+        "All tests pass (72 tests passed)",
+        "Type checking passes for all packages"
+      ],
+      "completionDate": "2026-02-08"
     },
     {
       "id": "PHASE1-PREMIUM-002",

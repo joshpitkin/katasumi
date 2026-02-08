@@ -1,43 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { extractToken, verifyToken, isTokenInvalidated } from '@/lib/auth';
+import { requirePremium } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 
 /**
  * GET /api/sync/status
  * Get sync status including last sync timestamp and pending changes count
+ * PREMIUM FEATURE: Requires active premium subscription
  */
 export async function GET(request: NextRequest) {
   try {
-    // Verify authentication
-    const authHeader = request.headers.get('Authorization');
-    const token = extractToken(authHeader);
-    
-    if (!token) {
-      return NextResponse.json(
-        { error: 'No token provided' },
-        { status: 401 }
-      );
+    // Verify premium access
+    const authResult = await requirePremium(request, prisma);
+    if (authResult instanceof NextResponse) {
+      return authResult; // Return error response
     }
-    
-    if (isTokenInvalidated(token)) {
-      return NextResponse.json(
-        { error: 'Token has been invalidated' },
-        { status: 401 }
-      );
-    }
-    
-    const payload = verifyToken(token);
-    if (!payload) {
-      return NextResponse.json(
-        { error: 'Invalid or expired token' },
-        { status: 401 }
-      );
-    }
+    const { user } = authResult;
     
     // Get last successful sync log
     const lastSync = await prisma.syncLog.findFirst({
       where: {
-        userId: payload.userId,
+        userId: user.id,
         status: 'success',
       },
       orderBy: {
@@ -49,7 +31,7 @@ export async function GET(request: NextRequest) {
     const lastSyncTime = lastSync?.createdAt || new Date(0);
     const pendingChangesCount = await prisma.userShortcut.count({
       where: {
-        userId: payload.userId,
+        userId: user.id,
         updatedAt: {
           gt: lastSyncTime,
         },
@@ -59,7 +41,7 @@ export async function GET(request: NextRequest) {
     // Total shortcuts count
     const totalShortcuts = await prisma.userShortcut.count({
       where: {
-        userId: payload.userId,
+        userId: user.id,
       },
     });
     

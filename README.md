@@ -49,6 +49,42 @@ The name "katasumi" embodies our design philosophy:
 - 💎 Premium tier with managed API keys for AI searches
 - 📱 Responsive design for desktop and mobile
 
+### Premium vs Free Tier
+
+**Premium Features** (require account + subscription):
+- 🔄 Multi-device sync for shortcuts and collections
+- 🤖 Built-in AI search (no API key needed)
+- ☁️ Cloud storage for user shortcuts
+- 🎯 Unlimited AI queries
+
+**Free Features** (no account needed):
+- 🔍 Full keyword search functionality
+- 💻 Local-only TUI usage
+- 🤖 AI search with your own API key
+- 📝 Local shortcut creation and editing
+
+#### Setting Up AI for Free Users
+
+Free tier users can use AI-powered search by providing their own API key:
+
+**TUI (Terminal Interface):**
+1. Create/edit `~/.katasumi/config.json`:
+```json
+{
+  "ai": {
+    "provider": "openai",
+    "apiKey": "your-api-key-here",
+    "model": "gpt-4"
+  }
+}
+```
+
+**Web Interface:**
+- Include `userApiKey` and `aiProvider` in your API requests to `/api/ai`
+- Supported providers: `openai`, `anthropic`, `openrouter`, `ollama`
+
+Premium users can use built-in AI without any configuration.
+
 ## 🏗️ Architecture
 
 Katasumi uses a monorepo structure with shared core logic:

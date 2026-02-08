@@ -1,5 +1,7 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import { NextRequest, NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
 
 const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'your-secret-key-here';
 const JWT_EXPIRES_IN = '7d';
@@ -7,6 +9,7 @@ const JWT_EXPIRES_IN = '7d';
 export interface JWTPayload {
   userId: string;
   email: string;
+  subscriptionStatus?: string;
   iat?: number;
   exp?: number;
 }
@@ -70,4 +73,91 @@ export function invalidateToken(token: string): void {
  */
 export function isTokenInvalidated(token: string): boolean {
   return invalidatedTokens.has(token);
+}
+
+/**
+ * Verify user has premium subscription
+ * Returns user object if premium, null otherwise
+ */
+export async function verifyPremiumAccess(
+  prisma: PrismaClient,
+  userId: string
+): Promise<{ user: any; isPremium: boolean }> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      email: true,
+      subscriptionStatus: true,
+      subscriptionExpiresAt: true,
+    },
+  });
+
+  if (!user) {
+    return { user: null, isPremium: false };
+  }
+
+  const isPremium =
+    (user.subscriptionStatus === 'premium' || user.subscriptionStatus === 'enterprise') &&
+    (!user.subscriptionExpiresAt || user.subscriptionExpiresAt > new Date());
+
+  return { user, isPremium };
+}
+
+/**
+ * Middleware to require premium subscription
+ * Returns user if premium, or error response
+ */
+export async function requirePremium(
+  request: NextRequest,
+  prisma: PrismaClient
+): Promise<{ user: any } | NextResponse> {
+  // Verify authentication
+  const authHeader = request.headers.get('Authorization');
+  const token = extractToken(authHeader);
+
+  if (!token) {
+    return NextResponse.json(
+      { error: 'Authentication required. Premium feature requires login.' },
+      { status: 401 }
+    );
+  }
+
+  if (isTokenInvalidated(token)) {
+    return NextResponse.json(
+      { error: 'Token has been invalidated' },
+      { status: 401 }
+    );
+  }
+
+  const payload = verifyToken(token);
+  if (!payload) {
+    return NextResponse.json(
+      { error: 'Invalid or expired token' },
+      { status: 401 }
+    );
+  }
+
+  // Verify premium access
+  const { user, isPremium } = await verifyPremiumAccess(prisma, payload.userId);
+
+  if (!user) {
+    return NextResponse.json(
+      { error: 'User not found' },
+      { status: 404 }
+    );
+  }
+
+  if (!isPremium) {
+    return NextResponse.json(
+      {
+        error: 'Premium subscription required',
+        message: 'This feature requires a premium subscription. Please upgrade to access sync and built-in AI features.',
+        upgradeUrl: '/pricing',
+      },
+      { status: 403 }
+    );
+  }
+
+  return { user };
 }

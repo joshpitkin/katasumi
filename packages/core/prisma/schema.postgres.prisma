@@ -59,10 +59,12 @@ model AppInfo {
 
 // Users table - stores user accounts for web app
 model User {
-  id             String   @id @default(uuid())
-  email          String   @unique
-  tier           String   @default("free") // 'free' | 'pro' | 'enterprise'
-  apiTokenHash   String?  @map("api_token_hash")
+  id                    String    @id @default(uuid())
+  email                 String    @unique
+  tier                  String    @default("free") // 'free' | 'pro' | 'enterprise'
+  subscriptionStatus    String    @default("free") @map("subscription_status") // 'free' | 'premium' | 'enterprise'
+  subscriptionExpiresAt DateTime? @map("subscription_expires_at")
+  apiTokenHash          String?   @map("api_token_hash")
   
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
@@ -74,6 +76,7 @@ model User {
   
   @@index([email])
   @@index([tier])
+  @@index([subscriptionStatus])
   @@map("users")
 }
 

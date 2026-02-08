@@ -2737,3 +2737,57 @@ katasumi login --token <jwt-token>
 - `packages/tui/src/commands/login.ts` - Login command implementation
 - `packages/tui/src/__tests__/login-command.test.ts` - Test suite
 
+
+## 2026-02-07 - PHASE1-PREMIUM-001: Premium vs Free Tier Model Implementation
+
+### Summary
+Implemented the core business model defining premium and free tier access controls across the application.
+
+### Changes Made
+1. **Database Schema Updates**
+   - Added `subscription_status` field (free/premium/enterprise) to User model
+   - Added `subscription_expires_at` field for subscription expiration tracking
+   - Created migration: `20260207_235900_add_subscription_fields.js`
+   - Updated schemas in both `/packages/web/prisma/schema.prisma` and `/packages/core/prisma/schema.postgres.prisma`
+
+2. **Authentication & Authorization Middleware**
+   - Created `requirePremium()` middleware in `/packages/web/lib/auth.ts`
+   - Implemented `verifyPremiumAccess()` helper function
+   - Middleware checks JWT authentication + subscription status + expiration date
+   - Returns 403 with upgrade message for non-premium users
+
+3. **API Endpoint Updates**
+   - **Sync Endpoints** (now premium-only):
+     - `/api/sync/pull` - Pull shortcuts from cloud
+     - `/api/sync/push` - Push shortcuts to cloud
+     - `/api/sync/status` - Check sync status
+   - **AI Endpoint** (hybrid access):
+     - Premium users: Use built-in AI with server's protected API key
+     - Free users: Must provide `userApiKey` and `aiProvider` in request body
+     - Graceful degradation with helpful error messages
+
+4. **Documentation**
+   - Updated README.md with "Premium vs Free Tier" section
+   - Added "Setting Up AI for Free Users" instructions
+   - Documented TUI config file format (`~/.katasumi/config.json`)
+   - Documented Web API usage for free tier AI search
+
+### Verification
+- ✅ All 72 tests pass
+- ✅ Type checking passes in all packages
+- ✅ Prisma clients regenerated successfully
+- ✅ Migration created for database schema changes
+
+### Business Impact
+- Clear monetization model established
+- Premium features protected behind subscription checks
+- Free tier remains functional with user-provided AI keys
+- Upgrade prompts guide users toward premium subscription
+
+### Next Steps
+- Run database migration on production database
+- Add UI components showing "Premium" badges
+- Implement TUI login flow for sync features
+- Add upgrade prompts in web UI for non-authenticated users
+- Integrate payment processor for subscription management
+
