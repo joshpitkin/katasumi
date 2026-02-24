@@ -18,6 +18,8 @@ interface UserSettings {
 
 export function SettingsOverlay() {
   const setShowSettings = useStore((state) => state.setShowSettings)
+  const setStoreAiKeyMode = useStore((state) => state.setAiKeyMode)
+  const setAiEnabled = useStore((state) => state.setAiEnabled)
   const [provider, setProvider] = useState<AIProvider>('openai')
   const [apiKey, setApiKey] = useState('')
   const [model, setModel] = useState('')
@@ -38,7 +40,7 @@ export function SettingsOverlay() {
     }
     
     // Fetch user settings if authenticated
-    const token = localStorage.getItem('auth_token')
+    const token = localStorage.getItem('token')
     if (token) {
       fetchUserSettings(token)
     }
@@ -62,7 +64,7 @@ export function SettingsOverlay() {
   }
   
   const handleBuiltInAIToggle = async (enabled: boolean) => {
-    const token = localStorage.getItem('auth_token')
+    const token = localStorage.getItem('token')
     if (!token) return
     
     try {
@@ -77,8 +79,12 @@ export function SettingsOverlay() {
       
       if (response.ok) {
         setUseBuiltInAI(enabled)
+        const newMode = enabled ? 'builtin' : 'personal'
+        setStoreAiKeyMode(newMode)
+        // Auto-enable AI in the header when switching to built-in
+        if (enabled) setAiEnabled(true)
         if (userSettings) {
-          setUserSettings({ ...userSettings, aiKeyMode: enabled ? 'builtin' : 'personal' })
+          setUserSettings({ ...userSettings, aiKeyMode: newMode })
         }
       } else {
         const data = await response.json()
@@ -255,8 +261,8 @@ export function SettingsOverlay() {
               <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
                 <p className="text-sm text-blue-800 dark:text-blue-300">
                   {userSettings?.isPremium 
-                    ? 'Enable built-in AI above or configure your own AI provider below'
-                    : 'Configure an AI provider to enable AI-powered semantic search'
+                    ? 'Enable built-in AI above, or configure your own provider below'
+                    : 'Subscribe to use built-in AI, or configure your own provider below'
                   }
                 </p>
               </div>
@@ -265,11 +271,13 @@ export function SettingsOverlay() {
             {useBuiltInAI && (
               <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
                 <p className="text-sm text-green-800 dark:text-green-300">
-                  ✓ Built-in AI is active. Personal API key configuration is optional.
+                  ✓ Built-in AI is active — no personal API key needed.
                 </p>
               </div>
             )}
 
+            {/* Personal API configuration — hidden when built-in AI is active */}
+            {!useBuiltInAI && (
             <div className="space-y-4">
               {/* Provider Selection */}
               <div>
@@ -374,6 +382,7 @@ export function SettingsOverlay() {
                 </button>
               </div>
             </div>
+            )}
           </section>
 
           <section className="pt-4 border-t border-gray-200 dark:border-gray-700">

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Text } from 'ink';
 import type { PlatformOption } from '../store.js';
-import { isAIConfigured } from '../utils/config.js';
+import { isAIConfigured, loadToken } from '../utils/config.js';
 import { debugLog } from '../utils/debug-logger.js';
 
 interface HeaderProps {
@@ -28,7 +28,14 @@ function getPlatformDisplay(platform: PlatformOption): string {
 export function Header({ mode, platform, aiEnabled }: HeaderProps) {
   const modeDisplay = mode === 'app-first' ? 'App-First' : 'Full-Phrase';
   const aiConfigured = isAIConfigured();
-  const aiStatus = aiEnabled ? 'ON' : (aiConfigured ? 'OFF' : 'OFF - Not Configured / Login Required');
+  const isLoggedIn = !!loadToken();
+  const aiStatus = aiEnabled
+    ? 'ON'
+    : aiConfigured
+    ? 'OFF'
+    : isLoggedIn
+    ? 'OFF - Configure AI Settings'
+    : 'OFF - Login Required';
   const platformDisplay = getPlatformDisplay(platform);
 
   // Debug: Header should always be at the top

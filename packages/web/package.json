@@ -14,8 +14,7 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
     "verify": "node verify-phase3-web-001.mjs",
-    "db:migrate": "DB_TYPE=postgres pnpm --filter=@katasumi/core run migrate",
-    "db:seed": "DB_TYPE=postgres pnpm --filter=@katasumi/core run seed"
+    "db:migrate": "DB_TYPE=postgres pnpm --filter=@katasumi/core run migrate"
   },
   "keywords": [
     "shortcuts",

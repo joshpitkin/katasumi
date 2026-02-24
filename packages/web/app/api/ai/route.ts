@@ -3,6 +3,7 @@ import { extractToken, verifyToken, isTokenInvalidated } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { PostgresAdapter } from '@katasumi/core/dist/postgres-adapter';
 import { AISearchEngine } from '@katasumi/core/dist/ai-search-engine';
+import type { AIProviderConfig } from '@katasumi/core/dist/ai-search-engine';
 import type { Platform } from '@katasumi/core/dist/types';
 
 /**
@@ -42,15 +43,15 @@ export async function POST(request: NextRequest) {
             id: true,
             subscriptionStatus: true,
             subscriptionExpiresAt: true,
-            tier: true,
             aiKeyMode: true,
           },
         });
         
         if (user) {
           userId = user.id;
+          // subscriptionStatus is set to 'active' by the Stripe webhook on checkout completion
           isPremium =
-            (user.subscriptionStatus === 'premium' || user.subscriptionStatus === 'enterprise') &&
+            (user.subscriptionStatus === 'active' || user.subscriptionStatus === 'enterprise') &&
             (!user.subscriptionExpiresAt || user.subscriptionExpiresAt > new Date());
           isEnterprise = user.subscriptionStatus === 'enterprise';
           aiKeyMode = user.aiKeyMode || 'personal';
@@ -59,7 +60,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Determine which API key to use
-    let aiConfig: any;
+    let aiConfig: AIProviderConfig;
     let usingBuiltInAI = false;
     
     if (userApiKey) {
@@ -97,14 +98,14 @@ export async function POST(request: NextRequest) {
         }
       }
       
-      // Use internal API key
-      const aiProvider = (process.env.AI_PROVIDER || 'openai') as 'openai' | 'anthropic' | 'openrouter' | 'ollama';
+      // Use internal OpenRouter API key
+      const aiProvider = (process.env.AI_PROVIDER || 'openrouter') as 'openai' | 'anthropic' | 'openrouter' | 'ollama';
       aiConfig = {
         provider: aiProvider,
-        apiKey: process.env.AI_API_KEY,
-        model: process.env.AI_MODEL,
+        apiKey: process.env.OPENROUTER_API_KEY,
+        model: process.env.AI_MODEL || 'openai/gpt-4o-mini',
         baseUrl: process.env.AI_BASE_URL,
-        timeout: parseInt(process.env.AI_TIMEOUT || '5000'),
+        timeout: parseInt(process.env.AI_TIMEOUT || '10000'),
       };
       usingBuiltInAI = true;
     } else {

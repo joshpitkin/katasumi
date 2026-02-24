@@ -98,7 +98,7 @@ export async function verifyPremiumAccess(
   }
 
   const isPremium =
-    (user.subscriptionStatus === 'premium' || user.subscriptionStatus === 'enterprise') &&
+    (user.subscriptionStatus === 'active' || user.subscriptionStatus === 'enterprise') &&
     (!user.subscriptionExpiresAt || user.subscriptionExpiresAt > new Date());
 
   return { user, isPremium };

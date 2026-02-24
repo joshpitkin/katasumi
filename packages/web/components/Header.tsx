@@ -13,13 +13,14 @@ export function Header() {
   const aiEnabled = useStore((state) => state.aiEnabled)
   const toggleMode = useStore((state) => state.toggleMode)
   const toggleAI = useStore((state) => state.toggleAI)
-  const userTier = useStore((state) => state.userTier)
-  const aiQueryCount = useStore((state) => state.aiQueryCount)
   const setShowSettings = useStore((state) => state.setShowSettings)
   const setPlatform = useStore((state) => state.setPlatform)
   const isAuthenticated = useStore((state) => state.isAuthenticated)
   const user = useStore((state) => state.user)
   const setUser = useStore((state) => state.setUser)
+  const setAiKeyMode = useStore((state) => state.setAiKeyMode)
+  const setAiEnabled = useStore((state) => state.setAiEnabled)
+  const aiKeyMode = useStore((state) => state.aiKeyMode)
   const logout = useStore((state) => state.logout)
   const [showAccountMenu, setShowAccountMenu] = useState(false)
 
@@ -42,6 +43,19 @@ export function Header() {
         try {
           const userData = JSON.parse(userStr)
           setUser(userData)
+          // Restore AI mode for premium users after a hard page refresh
+          fetch('/api/user/settings', {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+            .then((r) => (r.ok ? r.json() : null))
+            .then((settings) => {
+              if (settings?.isPremium) {
+                const mode = settings.aiKeyMode === 'builtin' ? 'builtin' : 'personal'
+                setAiKeyMode(mode)
+                if (mode === 'builtin') setAiEnabled(true)
+              }
+            })
+            .catch(() => {})
         } catch (error) {
           // Invalid user data, clear storage
           localStorage.removeItem('token')
@@ -60,13 +74,6 @@ export function Header() {
     if (p === 'windows') return 'Windows'
     if (p === 'linux') return 'Linux'
     return 'All'
-  }
-
-  const getAIQueryDisplay = () => {
-    if (userTier === 'premium') {
-      return 'Unlimited'
-    }
-    return `${aiQueryCount} remaining`
   }
 
   const handleLogout = () => {
@@ -121,18 +128,13 @@ export function Header() {
                     ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50'
                     : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
                 }`}
-                title={!isAIConfigured() ? "Configure AI in Settings to enable" : "Press F4 to toggle AI (Cmd+A in Full-Phrase mode)"}
+                title={aiKeyMode === 'builtin' ? 'Built-in AI included with your subscription' : !isAIConfigured() ? "Configure AI in Settings to enable" : "Press F4 to toggle AI (Cmd+A in Full-Phrase mode)"}
               >
                 AI: {aiEnabled ? 'ON' : 'OFF'}
-                {!isAIConfigured() && !aiEnabled && (
+                {!isAIConfigured() && !aiEnabled && aiKeyMode !== 'builtin' && (
                   <span className="ml-1 text-xs">- Configure in Settings</span>
                 )}
               </button>
-              {aiEnabled && (
-                <span className="text-xs font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
-                  {getAIQueryDisplay()}
-                </span>
-              )}
             </div>
             )}
 
@@ -186,8 +188,8 @@ export function Header() {
                       <div className="py-1">
                         <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">
                           <div className="font-medium truncate">{user?.email}</div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            {userTier === 'premium' ? 'Premium' : 'Free'} Plan
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 capitalize">
+                            {user?.subscriptionStatus ?? (userTier === 'premium' ? 'premium' : 'free')}
                           </div>
                         </div>
                         <button

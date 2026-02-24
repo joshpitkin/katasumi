@@ -52,10 +52,9 @@ export async function GET(request: NextRequest) {
       },
     });
     
-    const isPremium = 
-      (user.subscriptionStatus === 'premium' || user.subscriptionStatus === 'enterprise') &&
+    const isPremium =
+      (user.subscriptionStatus === 'active' || user.subscriptionStatus === 'enterprise') &&
       (!user.subscriptionExpiresAt || user.subscriptionExpiresAt > new Date());
-    
     const isEnterprise = user.subscriptionStatus === 'enterprise';
     
     // Mask API key for security
@@ -143,8 +142,8 @@ export async function PATCH(request: NextRequest) {
         return NextResponse.json({ error: 'User not found' }, { status: 404 });
       }
       
-      const isPremium = 
-        (user.subscriptionStatus === 'premium' || user.subscriptionStatus === 'enterprise') &&
+      const isPremium =
+        (user.subscriptionStatus === 'active' || user.subscriptionStatus === 'enterprise') &&
         (!user.subscriptionExpiresAt || user.subscriptionExpiresAt > new Date());
       
       if (!isPremium) {
@@ -159,7 +158,7 @@ export async function PATCH(request: NextRequest) {
     }
     
     // Prepare update data
-    const updateData: any = {};
+    const updateData: Record<string, string | null> = {};
     if (aiKeyMode !== undefined) updateData.aiKeyMode = aiKeyMode;
     if (aiProvider !== undefined) updateData.aiProvider = aiProvider;
     if (aiModel !== undefined) updateData.aiModel = aiModel;

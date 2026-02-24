@@ -15,7 +15,7 @@ interface FooterProps {
 export function Footer({ mode, selectedApp, syncStatus = 'idle', syncMessage = '' }: FooterProps) {
   // Conditionally show Tab shortcut
   const tabShortcut = (mode === 'app-first' && selectedApp) ? '' : '[Tab] Switch Mode | ';
-  const commonShortcuts = `[Ctrl+C] Quit | [?] Help | ${tabShortcut}[a] Toggle AI | [p] Platform | [s] Sync`;
+  const commonShortcuts = `[Ctrl+C] Quit | [?] Help | ${tabShortcut}[a] Toggle AI | [p] Platform | [s/Ctrl+S] Sync`;
   const modeSpecific =
     mode === 'app-first'
       ? selectedApp 

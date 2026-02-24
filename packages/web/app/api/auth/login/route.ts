@@ -47,6 +47,7 @@ export async function POST(request: NextRequest) {
         id: user.id,
         email: user.email,
         tier: user.tier,
+        subscriptionStatus: user.subscriptionStatus,
       },
     });
   } catch (error) {

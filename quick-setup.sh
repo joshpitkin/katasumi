@@ -53,6 +53,12 @@ pnpm install
 
 echo ""
 
+# Build core package first (needed for migrations)
+echo "🔨 Building core package..."
+pnpm --filter=@katasumi/core run build
+
+echo ""
+
 # Setup PostgreSQL if Docker is running
 if docker-compose ps | grep -q "katasumi-postgres"; then
     echo "🗄️  Setting up PostgreSQL..."

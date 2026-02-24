@@ -29,11 +29,17 @@ export interface UserWithPassword {
   email: string;
   passwordHash: string;
   tier: string;
+  subscriptionStatus: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
-export async function createUser(email: string, password: string): Promise<UserWithPassword> {
+export async function createUser(
+  email: string,
+  password: string,
+  tier: string = 'pending',
+  subscriptionStatus: string = 'pending'
+): Promise<UserWithPassword> {
   const { hashPassword } = await import('./auth');
   const passwordHash = await hashPassword(password);
   
@@ -47,7 +53,8 @@ export async function createUser(email: string, password: string): Promise<UserW
     data: {
       email,
       passwordHash,
-      tier: 'free',
+      tier,
+      subscriptionStatus,
     },
   });
   
@@ -56,6 +63,7 @@ export async function createUser(email: string, password: string): Promise<UserW
     email: user.email,
     passwordHash: user.passwordHash,
     tier: user.tier,
+    subscriptionStatus: user.subscriptionStatus,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   };
@@ -70,6 +78,7 @@ export async function findUserByEmail(email: string): Promise<UserWithPassword |
     email: user.email,
     passwordHash: user.passwordHash,
     tier: user.tier,
+    subscriptionStatus: user.subscriptionStatus,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   };
@@ -84,6 +93,7 @@ export async function findUserById(id: string): Promise<UserWithPassword | null>
     email: user.email,
     passwordHash: user.passwordHash,
     tier: user.tier,
+    subscriptionStatus: user.subscriptionStatus,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   };

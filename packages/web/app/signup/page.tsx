@@ -1,122 +1,178 @@
-import { Metadata } from 'next'
-import Link from 'next/link'
+'use client'
 
-export const metadata: Metadata = {
-  title: 'Sign Up - Katasumi',
-  description: 'Choose your Katasumi plan: Free or Premium with cloud sync and built-in AI.',
-}
+import { useState, FormEvent } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 export default function SignupPage() {
+  const router = useRouter()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  // Show a banner if the user cancelled checkout
+  const canceled = typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).get('canceled') === 'true'
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    setError('')
+
+    if (!email || !password) {
+      setError('Email and password are required')
+      return
+    }
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters')
+      return
+    }
+    if (password !== confirmPassword) {
+      setError('Passwords do not match')
+      return
+    }
+
+    setLoading(true)
+    try {
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.error || 'Failed to start checkout. Please try again.')
+        setLoading(false)
+        return
+      }
+
+      // Redirect to Stripe Checkout
+      window.location.href = data.url
+    } catch {
+      setError('Network error. Please try again.')
+      setLoading(false)
+    }
+  }
+
   return (
-    <div className="max-w-5xl mx-auto py-12 px-4">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold mb-4">Choose Your Plan</h1>
-        <p className="text-gray-600 dark:text-gray-300 text-lg">
-          Start with our free tier or go premium for advanced features
-        </p>
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-        {/* Free Tier */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 border-2 border-gray-200 dark:border-gray-700">
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold mb-2">Free</h2>
-            <div className="text-3xl font-bold mb-2">$0<span className="text-lg text-gray-500">/month</span></div>
-            <p className="text-gray-600 dark:text-gray-400">Perfect for personal use</p>
-          </div>
-
-          <ul className="space-y-3 mb-8">
-            <li className="flex items-start gap-2">
-              <span className="text-green-500 mt-1 font-bold">✓</span>
-              <span className="text-gray-700 dark:text-gray-300">Local usage only</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-green-500 mt-1 font-bold">✓</span>
-              <span className="text-gray-700 dark:text-gray-300">Bring your own AI API key</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-green-500 mt-1 font-bold">✓</span>
-              <span className="text-gray-700 dark:text-gray-300">No sync features</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-green-500 mt-1 font-bold">✓</span>
-              <span className="text-gray-700 dark:text-gray-300">Full keyboard shortcuts library</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-green-500 mt-1 font-bold">✓</span>
-              <span className="text-gray-700 dark:text-gray-300">TUI interface</span>
-            </li>
-          </ul>
-
-          <Link
-            href="https://github.com/joshpitkin/katasumi#readme"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block w-full text-center px-6 py-3 font-semibold bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-          >
-            Download Free Version
-          </Link>
-        </div>
-
-        {/* Premium Tier */}
-        <div className="bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-950 dark:to-blue-950 rounded-lg shadow-xl p-8 border-2 border-purple-300 dark:border-purple-700 relative">
-          <div className="absolute top-4 right-4 bg-purple-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-            COMING SOON
-          </div>
-
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold mb-2">Premium</h2>
-            <div className="text-3xl font-bold mb-2">TBD<span className="text-lg text-gray-500">/month</span></div>
-            <p className="text-gray-600 dark:text-gray-400">For power users</p>
-          </div>
-
-          <ul className="space-y-3 mb-8">
-            <li className="flex items-start gap-2">
-              <span className="text-purple-600 dark:text-purple-400 mt-1 font-bold">✓</span>
-              <span className="text-gray-900 dark:text-gray-100 font-medium">Cloud sync across all devices</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-purple-600 dark:text-purple-400 mt-1 font-bold">✓</span>
-              <span className="text-gray-900 dark:text-gray-100 font-medium">Built-in AI (100 queries/day)</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-purple-600 dark:text-purple-400 mt-1 font-bold">✓</span>
-              <span className="text-gray-900 dark:text-gray-100 font-medium">Multi-device support</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-purple-600 dark:text-purple-400 mt-1 font-bold">✓</span>
-              <span className="text-gray-900 dark:text-gray-100 font-medium">No API key setup required</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-purple-600 dark:text-purple-400 mt-1 font-bold">✓</span>
-              <span className="text-gray-900 dark:text-gray-100 font-medium">Priority support</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-purple-600 dark:text-purple-400 mt-1 font-bold">✓</span>
-              <span className="text-gray-900 dark:text-gray-100 font-medium">Custom collections sync</span>
-            </li>
-          </ul>
-
-          <button
-            disabled
-            className="block w-full text-center px-6 py-3 font-semibold bg-purple-300 dark:bg-purple-800 text-purple-800 dark:text-purple-300 rounded-lg cursor-not-allowed opacity-75"
-          >
-            Coming Soon
-          </button>
-
-          <p className="text-sm text-gray-600 dark:text-gray-400 text-center mt-4">
-            Payment integration in development
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+      <div className="max-w-md w-full space-y-8">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Create Your Account</h1>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">
+            Subscribe to get full access to Katasumi
           </p>
         </div>
-      </div>
 
-      <div className="mt-12 text-center">
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-          Note: Premium features can be manually enabled by administrators during beta
-        </p>
-        <Link href="/" className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
-          ← Back to home
-        </Link>
+        {/* Feature highlights */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
+          <ul className="space-y-2 text-sm">
+            <li className="flex items-center gap-2">
+              <span className="text-purple-500 font-bold">✓</span>
+              <span className="text-gray-700 dark:text-gray-300">Cloud sync across all devices</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="text-purple-500 font-bold">✓</span>
+              <span className="text-gray-700 dark:text-gray-300">Built-in AI (100 queries/day)</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="text-purple-500 font-bold">✓</span>
+              <span className="text-gray-700 dark:text-gray-300">Full keyboard shortcuts library</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="text-purple-500 font-bold">✓</span>
+              <span className="text-gray-700 dark:text-gray-300">Custom collections &amp; multi-device support</span>
+            </li>
+          </ul>
+        </div>
+
+        {canceled && (
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 text-yellow-800 dark:text-yellow-200 px-4 py-3 rounded">
+            Checkout was cancelled. Your account has not been created. You can try again below.
+          </div>
+        )}
+
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {error && (
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 px-4 py-3 rounded">
+                {error}
+              </div>
+            )}
+
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                placeholder="you@example.com"
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                placeholder="At least 6 characters"
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Confirm Password
+              </label>
+              <input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                placeholder="Re-enter your password"
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-4 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Redirecting to checkout…' : 'Subscribe & Create Account'}
+            </button>
+
+            <p className="text-xs text-center text-gray-500 dark:text-gray-400">
+              You will be redirected to Stripe to complete payment. Your account is activated after payment.
+            </p>
+          </form>
+        </div>
+
+        <div className="text-center">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Already have an account?{' '}
+            <Link href="/login" className="text-purple-600 dark:text-purple-400 hover:underline font-medium">
+              Log in
+            </Link>
+          </p>
+          <Link href="/" className="mt-2 block text-sm text-gray-500 dark:text-gray-500 hover:underline">
+            ← Back to home
+          </Link>
+        </div>
       </div>
     </div>
   )

@@ -129,6 +129,7 @@ async function loginWithCredentials(email: string, password: string): Promise<Lo
   const data: any = await response.json();
 
   if (!response.ok) {
+    console.error('Login failed:', data.error || 'Unknown error');
     throw new Error(data.error || 'Login failed');
   }
 

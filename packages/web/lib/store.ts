@@ -23,7 +23,8 @@ interface AppState {
   // User state
   userTier: 'free' | 'premium'
   aiQueryCount: number
-  user: { email: string; userId: string } | null
+  aiKeyMode: 'builtin' | 'personal'
+  user: { email: string; id?: string; userId?: string; subscriptionStatus?: string; tier?: string } | null
   isAuthenticated: boolean
   
   // Search state
@@ -44,7 +45,9 @@ interface AppState {
   setShowSettings: (show: boolean) => void
   setUserTier: (tier: 'free' | 'premium') => void
   decrementAIQueryCount: () => void
-  setUser: (user: { email: string; userId: string } | null) => void
+  setAiEnabled: (enabled: boolean) => void
+  setAiKeyMode: (mode: 'builtin' | 'personal') => void
+  setUser: (user: { email: string; id?: string; userId?: string; subscriptionStatus?: string; tier?: string } | null) => void
   setIsAuthenticated: (isAuthenticated: boolean) => void
   logout: () => void
   
@@ -80,6 +83,7 @@ export const useStore = create<AppState>((set) => ({
   // Initial user state
   userTier: 'free',
   aiQueryCount: 10, // Free users get 10 AI queries
+  aiKeyMode: 'personal',
   user: null,
   isAuthenticated: false,
   
@@ -103,13 +107,17 @@ export const useStore = create<AppState>((set) => ({
   })),
   setPlatform: (platform) => set({ platform }),
   toggleAI: () => set((state) => {
-    // Only allow enabling AI if it's configured
-    if (!state.aiEnabled && !isAIConfigured()) {
-      // Open settings to configure AI
+    // Allow enabling AI if:
+    // 1. User has built-in AI (premium subscribers)
+    // 2. User has personally configured an AI key
+    if (!state.aiEnabled && state.aiKeyMode !== 'builtin' && !isAIConfigured()) {
+      // Open settings so user can configure their own key
       return { showSettings: true }
     }
     return { aiEnabled: !state.aiEnabled }
   }),
+  setAiEnabled: (aiEnabled) => set({ aiEnabled }),
+  setAiKeyMode: (aiKeyMode) => set({ aiKeyMode }),
   setShowHelp: (showHelp) => set({ showHelp }),
   setShowPlatformSelector: (showPlatformSelector) => set({ showPlatformSelector }),
   setShowSettings: (showSettings) => set({ showSettings }),
@@ -124,7 +132,7 @@ export const useStore = create<AppState>((set) => ({
       localStorage.removeItem('token');
       localStorage.removeItem('user');
     }
-    set({ user: null, isAuthenticated: false, userTier: 'free', aiQueryCount: 10 });
+    set({ user: null, isAuthenticated: false, userTier: 'free', aiQueryCount: 10, aiEnabled: false, aiKeyMode: 'personal' });
   },
   
   // Search actions

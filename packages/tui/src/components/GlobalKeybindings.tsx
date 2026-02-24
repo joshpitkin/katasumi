@@ -39,6 +39,12 @@ export function GlobalKeybindings({
       return;
     }
 
+    // Ctrl+S syncs even in input mode
+    if (key.ctrl && input === 's') {
+      onSync();
+      return;
+    }
+
     // Skip Tab handling when any modal is open (let the modal handle it)
     if (key.tab && (showFilterModal || showHelp || showPlatformSelector)) {
       return;

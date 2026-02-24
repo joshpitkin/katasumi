@@ -41,9 +41,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
     
-    // Check if user has premium access
-    const isPremium = 
-      (user.subscriptionStatus === 'premium' || user.subscriptionStatus === 'enterprise') &&
+    // Check if user has an active subscription
+    const isPremium =
+      (user.subscriptionStatus === 'active' || user.subscriptionStatus === 'enterprise') &&
       (!user.subscriptionExpiresAt || user.subscriptionExpiresAt > new Date());
     
     if (!isPremium) {

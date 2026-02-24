@@ -2,12 +2,14 @@
 
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-
-type FormMode = 'login' | 'signup';
+import Link from 'next/link';
+import { useStore } from '@/lib/store';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [mode, setMode] = useState<FormMode>('login');
+  const setUser = useStore((state) => state.setUser);
+  const setAiKeyMode = useStore((state) => state.setAiKeyMode);
+  const setAiEnabled = useStore((state) => state.setAiEnabled);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -18,22 +20,14 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
 
-    // Validation
     if (!email || !password) {
       setError('Email and password are required');
       setLoading(false);
       return;
     }
 
-    if (mode === 'signup' && password.length < 6) {
-      setError('Password must be at least 6 characters');
-      setLoading(false);
-      return;
-    }
-
     try {
-      const endpoint = mode === 'login' ? '/api/auth/login' : '/api/auth/signup';
-      const response = await fetch(endpoint, {
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -51,10 +45,30 @@ export default function LoginPage() {
       if (data.token) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
+        // Update Zustand store immediately so Header reflects the logged-in state
+        // without needing a hard page refresh (Next.js client-side nav keeps Header mounted)
+        setUser(data.user);
+
+        // Fetch full user settings to initialise AI mode for premium subscribers
+        try {
+          const settingsRes = await fetch('/api/user/settings', {
+            headers: { Authorization: `Bearer ${data.token}` },
+          });
+          if (settingsRes.ok) {
+            const settings = await settingsRes.json();
+            if (settings.isPremium) {
+              const mode = settings.aiKeyMode === 'builtin' ? 'builtin' : 'personal';
+              setAiKeyMode(mode);
+              if (mode === 'builtin') setAiEnabled(true);
+            }
+          }
+        } catch {
+          // Non-critical — leave defaults
+        }
       }
 
       // Redirect to search page
-      router.push('/');
+      router.push('/search');
     } catch (err) {
       setError('Network error. Please try again.');
       setLoading(false);
@@ -71,12 +85,10 @@ export default function LoginPage() {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h1 className="text-3xl font-bold text-center text-gray-900 dark:text-white">
-            {mode === 'login' ? 'Login' : 'Sign Up'}
+            Login
           </h1>
           <p className="mt-2 text-center text-gray-600 dark:text-gray-400">
-            {mode === 'login' 
-              ? 'Welcome back! Please login to your account.' 
-              : 'Create a new account to get started.'}
+            Welcome back! Please login to your account.
           </p>
         </div>
 
@@ -113,7 +125,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                placeholder={mode === 'signup' ? 'At least 6 characters' : 'Enter your password'}
+                placeholder="Enter your password"
                 required
               />
             </div>
@@ -123,7 +135,7 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Please wait...' : (mode === 'login' ? 'Login' : 'Sign Up')}
+              {loading ? 'Please wait...' : 'Login'}
             </button>
           </form>
 
@@ -168,20 +180,12 @@ export default function LoginPage() {
           </div>
 
           <div className="mt-6 text-center">
-            <button
-              type="button"
-              onClick={() => {
-                setMode(mode === 'login' ? 'signup' : 'login');
-                setError('');
-                setEmail('');
-                setPassword('');
-              }}
+            <Link
+              href="/signup"
               className="text-blue-600 dark:text-blue-400 hover:underline text-sm"
             >
-              {mode === 'login' 
-                ? "Don't have an account? Sign up" 
-                : 'Already have an account? Login'}
-            </button>
+              Don&apos;t have an account? Sign up
+            </Link>
           </div>
         </div>
       </div>
