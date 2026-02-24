@@ -22,6 +22,7 @@ export function Header() {
   const setAiEnabled = useStore((state) => state.setAiEnabled)
   const aiKeyMode = useStore((state) => state.aiKeyMode)
   const logout = useStore((state) => state.logout)
+  const userTier = useStore((state) => state.userTier)
   const [showAccountMenu, setShowAccountMenu] = useState(false)
 
   // Detect platform on client-side after hydration to avoid mismatch
