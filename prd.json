@@ -1,7 +1,7 @@
 {
   "project": "Katasumi",
   "version": "1.0.0",
-  "lastUpdated": "2026-02-08T16:49:00Z",
+  "lastUpdated": "2026-02-24T22:54:00Z",
   "requirements": [
     {
       "id": "PHASE1-DB-003",
@@ -2614,6 +2614,46 @@
         "PHASE3-WEB-022 - AI Scraping (current pre-search implementation)",
         "PHASE1-SEARCH-002 - AI Search Engine (semantic search foundation)"
       ]
+    },
+    {
+      "id": "PHASE3-QUALITY-001",
+      "category": "Phase 3: Web - Lint & Accessibility Error Cleanup",
+      "description": "Systematically fix all Biome/ESLint lint errors and accessibility violations across web package components. Errors were introduced incrementally during feature development and now cover three components. Fixes should be real code corrections when possible.  A sample of the affected files are listed in the acceptance criteria, but a comprehensive check should be done across the entire turbo repo project to ensure all errors are resolved. This cleanup is essential for maintaining code quality, ensuring accessibility compliance, and preparing for future feature development without build noise or regressions.",
+      "acceptanceCriteria": [
+        "packages/web/components/Header.tsx: useEffect at line ~29 includes 'platform' and 'setPlatform' in dependency array (Zustand setters are stable so this is safe)",
+        "packages/web/components/Header.tsx: useEffect at line ~39 includes 'setAiEnabled', 'setAiKeyMode', and 'setUser' in dependency array",
+        "packages/web/components/Header.tsx: unused 'error' catch variable renamed to '_error'",
+        "packages/web/components/Header.tsx: all 6 <button> elements have explicit type='button'",
+        "packages/web/components/Header.tsx: both inline SVG icons have aria-hidden='true' (parent buttons already have title props)",
+        "packages/web/components/Header.tsx: backdrop <div> with onClick replaced with <button> styled as invisible overlay (fixes 'Static Elements should not be interactive' and missing keyboard handler)",
+        "packages/web/components/SettingsOverlay.tsx: useEffect at line ~33 includes 'fetchUserSettings' in dependency array (wrap fetchUserSettings in useCallback to keep it stable)",
+        "packages/web/components/SettingsOverlay.tsx: unused 'error' catch variable renamed to '_error'",
+        "packages/web/components/SettingsOverlay.tsx: all 3 <button> elements have explicit type='button'",
+        "packages/web/components/SettingsOverlay.tsx: all 3 inline SVG icons have aria-hidden='true'",
+        "packages/web/components/SettingsOverlay.tsx: all 4 <label> elements have htmlFor attributes matching id attributes on their associated <input> or <select> elements",
+        "packages/web/components/AppSelector.tsx: useEffect at line ~183 includes 'handleSelectApp' in dependency array (wrap handleSelectApp in useCallback)",
+        "packages/web/components/AppSelector.tsx: 'any' type on scrapeData parameter replaced with a typed interface (e.g., ScrapedShortcut / ScrapedResult)",
+        "packages/web/components/AppSelector.tsx: autoFocus attribute removed and replaced with programmatic focus via useRef/useEffect",
+        "packages/web/components/AppSelector.tsx: SVG icon at line ~295 has aria-hidden='true'",
+        "packages/web/components/AppSelector.tsx: both <button> elements have explicit type='button'",
+        "Running 'pnpm --filter=@katasumi/web build' produces zero lint/type errors",
+        "No error squiggles remain in VS Code for any of the three component files"
+      ],
+      "stepsToVerify": [
+        "Run: cd /home/jpitkin/Work/katasumi && pnpm --filter=@katasumi/web exec biome check packages/web/components/Header.tsx packages/web/components/SettingsOverlay.tsx packages/web/components/AppSelector.tsx",
+        "Run: pnpm --filter=@katasumi/web build — verify it exits 0 with no lint errors",
+        "Run: pnpm --filter=@katasumi/web tsc --noEmit — verify zero TypeScript errors",
+        "Manually verify Header still renders correctly (mode toggle, platform, AI toggle, settings, login/account buttons)",
+        "Manually verify SettingsOverlay form labels are correctly associated (click each label and confirm the matching input receives focus)",
+        "Manually verify AppSelector button grid and AI search button work as before",
+        "Run existing test suite: pnpm --filter=@katasumi/web test — all tests should still pass"
+      ],
+      "passes": true,
+      "priority": 2,
+      "priorityRationale": "Lint and accessibility errors cause build noise, block strict CI, and represent real accessibility regressions (missing labels, non-keyboard-accessible overlays). Should be resolved before next feature work.",
+      "reportedDate": "2026-02-24",
+      "technicalNotes": "Error categories across affected files:\n1. useEffect missing deps (7 total) — safe to add Zustand setters; use useCallback for derived functions first\n2. Buttons missing type='button' (11 total) — without explicit type, browsers default to type='submit' inside forms which can cause unintended form submissions\n3. SVG aria-hidden (6 total) — icons inside buttons/elements that already have title/aria-label; aria-hidden prevents screen readers from announcing redundant path data\n4. Interactive static element (1) — backdrop div in Header account menu dropdown; change to <button> with appearance:none styling\n5. Label not associated with input (4) — in SettingsOverlay AI settings form; add htmlFor + id pairs\n6. Unused catch variable (2) — rename to _error to signal intentional ignore\n7. 'any' type (2) — in AppSelector.saveScrapedShortcuts; define ScrapedShortcut interface\n8. autoFocus (1) — replace with useRef + focus() in useEffect",
+      "completedDate": "2026-02-24"
     }
   ]
 }

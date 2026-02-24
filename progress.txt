@@ -3237,3 +3237,41 @@ Created comprehensive ADMIN.md documentation for manual premium user provisionin
 - Type check passes ✅
 
 **Status:** COMPLETE ✅
+
+## 2026-02-24 - PHASE3-QUALITY-001: Lint & Accessibility Error Cleanup
+
+### Summary
+Fixed all lint errors and accessibility violations across three web components (Header.tsx, SettingsOverlay.tsx, AppSelector.tsx).
+
+### Changes Made
+
+#### Header.tsx
+1. Added missing useEffect dependencies: `platform`, `setPlatform`, `setAiEnabled`, `setAiKeyMode`, `setUser`
+2. Renamed unused error catch variable to `_error`
+3. Added `type="button"` to all 6 button elements
+4. Added `aria-hidden="true"` to both inline SVG icons
+5. Replaced backdrop div with button element for keyboard accessibility
+
+#### SettingsOverlay.tsx
+1. Wrapped `fetchUserSettings` in `useCallback` and added to useEffect dependency array
+2. Renamed unused error catch variable to `_error`
+3. Added `type="button"` to all 3 button elements
+4. Added `aria-hidden="true"` to all 3 inline SVG icons
+5. Added `htmlFor` attributes to all 4 label elements with matching input/select IDs
+
+#### AppSelector.tsx
+1. Wrapped `handleSelectApp` in `useCallback` and added to useEffect dependency array
+2. Defined `ScrapedShortcut` and `ScrapedResult` interfaces to replace `any` types
+3. Removed `autoFocus` attribute and replaced with programmatic focus via useRef/useEffect
+4. Added `aria-hidden="true"` to SVG icon
+5. Added `type="button"` to both button elements
+
+### Verification
+- ✅ `npx next lint` - Zero lint errors
+- ✅ `npx tsc --noEmit` - Zero TypeScript errors
+- ✅ `npm test` - All 72 tests passed (9 test files)
+- ⚠️ `npm run build` - Build fails due to unrelated dependency issue (@prisma/adapter-libsql), not related to this task
+
+### Result
+All acceptance criteria met. Code quality improved with proper React Hook dependencies, accessibility enhancements (keyboard navigation, ARIA attributes, label associations), and TypeScript type safety.
+

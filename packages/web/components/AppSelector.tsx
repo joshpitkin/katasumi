@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useStore } from '@/lib/store'
 import { useRouter } from 'next/navigation'
 import { isAIConfigured } from '@/lib/config'
@@ -14,6 +14,30 @@ interface AppInfo {
   shortcutCount: number
 }
 
+interface ScrapedShortcut {
+  action: string
+  keys: {
+    mac?: string
+    windows?: string
+    linux?: string
+  }
+  context?: string
+  category?: string
+  tags: string[]
+  confidence?: number
+}
+
+interface ScrapedResult {
+  app: {
+    name: string
+    displayName: string
+    category: string
+  }
+  shortcuts: ScrapedShortcut[]
+  sourceUrl: string
+  scrapedAt: string
+}
+
 export function AppSelector() {
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState('')
@@ -25,6 +49,11 @@ export function AppSelector() {
   const [aiError, setAiError] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const aiEnabled = useStore((state) => state.aiEnabled)
+
+  // Focus input on mount (replacing autoFocus attribute)
+  useEffect(() => {
+    inputRef.current?.focus()
+  }, [])
 
   useEffect(() => {
     async function fetchApps() {
@@ -57,9 +86,9 @@ export function AppSelector() {
     app.displayName.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  const handleSelectApp = (appName: string) => {
+  const handleSelectApp = useCallback((appName: string) => {
     useStore.setState({ selectedApp: appName })
-  }
+  }, [])
 
   const handleAISearch = async () => {
     // Check authentication
@@ -145,10 +174,10 @@ export function AppSelector() {
     }
   }
 
-  const saveScrapedShortcuts = async (scrapeData: any, token: string) => {
+  const saveScrapedShortcuts = async (scrapeData: ScrapedResult, token: string) => {
     try {
       // Save each shortcut to the database
-      const promises = scrapeData.shortcuts.map((shortcut: any) => 
+      const promises = scrapeData.shortcuts.map((shortcut: ScrapedShortcut) => 
         fetch('/api/shortcuts', {
           method: 'POST',
           headers: {
@@ -225,7 +254,7 @@ export function AppSelector() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isInputMode, focusedIndex, filteredApps])
+  }, [isInputMode, focusedIndex, filteredApps, handleSelectApp])
 
   // Reset to input mode when search query changes
   useEffect(() => {
@@ -253,12 +282,12 @@ export function AppSelector() {
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
         className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-        autoFocus
       />
       <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
         {filteredApps.map((app, index) => (
           <button
             key={app.id}
+            type="button"
             onClick={() => handleSelectApp(app.name)}
             className={`px-6 py-4 rounded-lg border-2 transition-colors font-medium ${
               !isInputMode && focusedIndex === index
@@ -280,6 +309,7 @@ export function AppSelector() {
           {aiEnabled && (
             <div className="flex flex-col items-center gap-2">
               <button
+                type="button"
                 onClick={handleAISearch}
                 disabled={isAIScraping || !isAIConfigured()}
                 className="px-6 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors inline-flex items-center gap-2"
@@ -292,7 +322,7 @@ export function AppSelector() {
                   </>
                 ) : (
                   <>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                     Use AI to search for shortcuts
