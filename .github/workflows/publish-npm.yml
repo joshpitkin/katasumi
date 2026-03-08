@@ -60,10 +60,9 @@ jobs:
         id: get_version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
       
-      - name: Update package.json version
+      - name: Update TUI package version
         run: |
-          cd packages/tui
-          pnpm version ${{ steps.get_version.outputs.VERSION }} --no-git-tag-version
+          node -e "const fs=require('fs');const p='packages/tui/package.json';const pkg=JSON.parse(fs.readFileSync(p,'utf8'));pkg.version='${{ steps.get_version.outputs.VERSION }}';fs.writeFileSync(p, JSON.stringify(pkg, null, 2)+'\n');"
       
       - name: Publish to npm
         run: |

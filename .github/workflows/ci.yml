@@ -44,6 +44,9 @@ jobs:
       - name: Build core package (generate Prisma clients)
         run: pnpm --filter=@katasumi/core build
 
+      - name: Build core database for core tests
+        run: pnpm --filter=@katasumi/core build-db
+
       - name: Refresh workspace links after core build
         run: pnpm install --frozen-lockfile
       
@@ -203,6 +206,7 @@ jobs:
       
       - name: Run database migrations
         env:
+          DB_TYPE: postgres
           DATABASE_URL: postgresql://katasumi:testpass@localhost:5432/katasumi_test
         run: |
           cd packages/core
@@ -210,6 +214,7 @@ jobs:
       
       - name: Seed test database
         env:
+          DB_TYPE: postgres
           DATABASE_URL: postgresql://katasumi:testpass@localhost:5432/katasumi_test
         run: |
           cd packages/core
@@ -286,6 +291,7 @@ jobs:
       
       - name: Run database migrations
         env:
+          DB_TYPE: postgres
           DATABASE_URL: postgresql://katasumi:testpass@localhost:5432/katasumi_test
         run: |
           cd packages/core
@@ -293,6 +299,7 @@ jobs:
       
       - name: Seed test database
         env:
+          DB_TYPE: postgres
           DATABASE_URL: postgresql://katasumi:testpass@localhost:5432/katasumi_test
         run: |
           cd packages/core
