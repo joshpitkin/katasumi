@@ -31,7 +31,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@katasumi/core": "file:../core",
+    "@katasumi/core": "workspace:*",
     "clipboardy": "^5.1.0",
     "dotenv": "^17.2.3",
     "ink": "^4.4.1",

@@ -58,38 +58,44 @@ echo "==================="
 # Test 1: Install dependencies
 test_step "pnpm install" "pnpm install --silent"
 
-# Test 2: Build all packages
+# Test 2: Build core package first (generates dist types used by workspace consumers)
+test_step "pnpm --filter=@katasumi/core run build" "pnpm --filter=@katasumi/core run build"
+
+# Test 3: Refresh workspace package links so @katasumi/core includes newly built dist outputs
+test_step "pnpm install (refresh workspace links)" "pnpm install --silent"
+
+# Test 4: Build all packages
 test_step "pnpm run build" "pnpm run build"
 
-# Test 3: Check that Prisma clients were generated
+# Test 5: Check that Prisma clients were generated
 test_step "Prisma client for SQLite generated" "[ -d packages/core/src/generated/prisma ]"
 test_step "Prisma client for PostgreSQL generated" "[ -d packages/core/src/generated/prisma-postgres ]"
 
-# Test 4: Check that TypeScript compiled
+# Test 6: Check that TypeScript compiled
 test_step "Core package built" "[ -d packages/core/dist ]"
 test_step "TUI package built" "[ -d packages/tui/dist ]"
 test_step "Web package built (Next.js)" "[ -d packages/web/.next ] || [ -f packages/web/next.config.js ]"
 
-# Test 5: Check specific output files exist
+# Test 7: Check specific output files exist
 test_step "Core index.js exists" "[ -f packages/core/dist/index.js ]"
 test_step "TUI cli.js exists" "[ -f packages/tui/dist/cli.js ]"
 
-# Test 6: Test typecheck command
+# Test 8: Test typecheck command
 test_step "pnpm run typecheck" "pnpm run typecheck"
 
-# Test 7: Test that scripts are executable
+# Test 9: Test that scripts are executable
 test_step "Migration script is executable" "node packages/core/dist/migrate.js --help 2>&1 | grep -q 'migrate' || true"
 
 echo ""
 echo "Script Validation Tests"
 echo "========================"
 
-# Test 8: Verify no npm commands in package.json files (look for standalone "npm run" not "pnpm run")
+# Test 10: Verify no npm commands in package.json files (look for standalone "npm run" not "pnpm run")
 test_step "No standalone 'npm run' in root package.json" "! grep -E '\\bnpm run\\b' package.json"
 test_step "No standalone 'npm run' in core package.json" "! grep -E '\\bnpm run\\b' packages/core/package.json"
 test_step "No standalone 'npm run' in tui package.json" "! grep -E '\\bnpm run\\b' packages/tui/package.json"
 
-# Test 9: Verify pnpm workspace commands
+# Test 11: Verify pnpm workspace commands
 test_step "Root uses --filter for workspaces" "grep -q '\\-\\-filter=' package.json"
 
 echo ""

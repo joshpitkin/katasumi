@@ -25,7 +25,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@katasumi/core": "file:../core",
+    "@katasumi/core": "workspace:*",
     "@prisma/adapter-pg": "^7.3.0",
     "@radix-ui/react-dialog": "^1.1.15",
     "@stripe/stripe-js": "^8.7.0",
