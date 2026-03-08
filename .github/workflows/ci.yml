@@ -92,6 +92,9 @@ jobs:
 
       - name: Build core package (generate Prisma clients)
         run: pnpm --filter=@katasumi/core build
+
+      - name: Build core database for core tests
+        run: pnpm --filter=@katasumi/core build-db
       
       - name: Run core package tests
         run: pnpm --filter=@katasumi/core test
