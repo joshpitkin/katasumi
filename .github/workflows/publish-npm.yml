@@ -1,4 +1,4 @@
-name: Publish TUI to npm
+name: Publish Core and TUI to npm
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   publish:
-    name: Build and Publish to npm
+    name: Build and Publish Packages
     runs-on: ubuntu-latest
     
     steps:
@@ -63,11 +63,26 @@ jobs:
         id: get_version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
       
-      - name: Update TUI package version
+      - name: Update package versions for release
         run: |
-          node -e "const fs=require('fs');const p='packages/tui/package.json';const pkg=JSON.parse(fs.readFileSync(p,'utf8'));pkg.version='${{ steps.get_version.outputs.VERSION }}';fs.writeFileSync(p, JSON.stringify(pkg, null, 2)+'\n');"
+          node -e "const fs=require('fs');const v='${{ steps.get_version.outputs.VERSION }}';const corePath='packages/core/package.json';const tuiPath='packages/tui/package.json';const core=JSON.parse(fs.readFileSync(corePath,'utf8'));core.version=v;fs.writeFileSync(corePath, JSON.stringify(core, null, 2)+'\\n');const tui=JSON.parse(fs.readFileSync(tuiPath,'utf8'));tui.version=v;tui.dependencies=tui.dependencies||{};tui.dependencies['@katasumi/core']='^'+v;fs.writeFileSync(tuiPath, JSON.stringify(tui, null, 2)+'\\n');"
+
+      - name: Copy root README for TUI package
+        run: cp README.md packages/tui/README.md
+
+      - name: Copy root LICENSE for published packages
+        run: |
+          cp LICENSE packages/core/LICENSE
+          cp LICENSE packages/tui/LICENSE
       
-      - name: Publish to npm
+      - name: Publish core to npm
+        run: |
+          cd packages/core
+          pnpm publish --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish TUI to npm
         run: |
           cd packages/tui
           pnpm publish --access public --no-git-checks
@@ -79,7 +94,7 @@ jobs:
         with:
           name: Release ${{ steps.get_version.outputs.VERSION }}
           body: |
-            ## 🎉 Katasumi TUI v${{ steps.get_version.outputs.VERSION }}
+            ## 🎉 Katasumi Packages v${{ steps.get_version.outputs.VERSION }}
             
             ### Installation
             ```bash
@@ -92,6 +107,7 @@ jobs:
             See the commit history for details.
             
             ### Package
+            📦 [Core on npm](https://www.npmjs.com/package/@katasumi/core/v/${{ steps.get_version.outputs.VERSION }})
             📦 [View on npm](https://www.npmjs.com/package/@katasumi/tui/v/${{ steps.get_version.outputs.VERSION }})
           draft: false
           prerelease: false
@@ -100,5 +116,7 @@ jobs:
       
       - name: Notify on success
         run: |
+          echo "✅ Successfully published @katasumi/core@${{ steps.get_version.outputs.VERSION }} to npm"
           echo "✅ Successfully published @katasumi/tui@${{ steps.get_version.outputs.VERSION }} to npm"
+          echo "📦 Core URL: https://www.npmjs.com/package/@katasumi/core/v/${{ steps.get_version.outputs.VERSION }}"
           echo "📦 Package URL: https://www.npmjs.com/package/@katasumi/tui/v/${{ steps.get_version.outputs.VERSION }}"

@@ -1,9 +1,9 @@
 # Katasumi (隅) - Your Corner Companion for Keyboard Shortcuts
 
 [![Build Status](https://img.shields.io/github/actions/workflow/status/ClearsiteConsultants/katasumi/ci.yml?branch=main)](https://github.com/ClearsiteConsultants/katasumi/actions)
-[![Version](https://img.shields.io/npm/v/katasumi.svg)](https://www.npmjs.com/package/katasumi)
+[![Version](https://img.shields.io/npm/v/katasumi.svg)](https://www.npmjs.com/package/@katasumi/tui)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Downloads](https://img.shields.io/npm/dt/katasumi.svg)](https://www.npmjs.com/package/katasumi)
+[![Downloads](https://img.shields.io/npm/dt/katasumi.svg)](https://www.npmjs.com/package/@katasumi/tui)
 
 **Katasumi** (カタスミ / 隅) - meaning "in the corner" - is an AI-powered keyboard shortcut discovery tool that stays quietly in the background, ready to help whenever you need it.
 
