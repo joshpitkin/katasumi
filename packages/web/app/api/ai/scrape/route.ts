@@ -26,6 +26,11 @@ interface ScrapeResponse {
   scrapedAt: string;
 }
 
+interface SearchResult {
+  title: string;
+  url: string;
+}
+
 /**
  * POST /api/ai/scrape
  * Use AI to search the web for keyboard shortcuts for an app
@@ -294,77 +299,143 @@ async function scrapeShortcutsWithAI(
 /**
  * Search the web for keyboard shortcut documentation
  */
-async function searchWeb(appName: string, signal: AbortSignal): Promise<Array<{ title: string; url: string }>> {
+async function searchWeb(appName: string, signal: AbortSignal): Promise<SearchResult[]> {
   const query = `${appName} keyboard shortcuts documentation`;
-  const searchUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
-  
+
   try {
     console.log(`[Search] Query: "${query}"`);
-    console.log(`[Search] URL: ${searchUrl}`);
-    
-    const response = await fetch(searchUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; Katasumi/1.0; +https://katasumi.dev)',
-      },
-      signal,
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Search failed: ${response.status}`);
-    }
-    
-    const html = await response.text();
-    console.log(`[Search] Response size: ${html.length} bytes`);
-    console.log(`[Search] First 500 chars:`, html.substring(0, 500));
-    
-    // Parse DuckDuckGo HTML results (simple regex extraction)
-    const results: Array<{ title: string; url: string }> = [];
-    const resultPattern = /<a[^>]+class="result__a"[^>]+href="([^"]+)"[^>]*>([^<]+)</g;
-    
-    let match;
-    let matchCount = 0;
-    while ((match = resultPattern.exec(html)) !== null && results.length < 5) {
-      matchCount++;
-      let url = match[1];
-      const title = match[2].trim();
-      
-      console.log(`[Search] Match ${matchCount}: ${title} -> ${url}`);
-      
-      // DuckDuckGo uses redirect URLs like: https://duckduckgo.com/l/?uddg=https://actualurl.com
-      // Extract the actual URL from the redirect parameter
-      if (url.includes('duckduckgo.com/l/')) {
-        const uddgMatch = url.match(/[?&]uddg=([^&]+)/);
-        if (uddgMatch) {
-          url = decodeURIComponent(uddgMatch[1]);
-          console.log(`[Search] Extracted redirect target: ${url}`);
+
+    const braveApiKey = process.env.BRAVE_SEARCH_API_KEY;
+    const serperApiKey = process.env.SERPER_API_KEY;
+
+    if (braveApiKey) {
+      try {
+        const braveResults = await searchWebWithBrave(query, braveApiKey, signal);
+        if (braveResults.length > 0) {
+          console.log(`[Search] Using Brave results (${braveResults.length})`);
+          return braveResults;
         }
+        console.warn('[Search] Brave returned no results, trying Serper...');
+      } catch (error) {
+        console.warn('[Search] Brave failed, trying Serper:', error);
       }
-      
-      // Filter out DuckDuckGo's own pages and Google
-      const isDuckDuckGoPage = url.includes('duckduckgo.com') && !url.includes('duckduckgo.com/l/');
-      const isGooglePage = url.includes('google.com');
-      
-      if (!isDuckDuckGoPage && !isGooglePage) {
-        results.push({ url, title });
-        console.log(`[Search] ✓ Added result ${results.length}: ${url}`);
-      } else {
-        console.log(`[Search] ✗ Filtered out: ${url}`);
-      }
+    } else {
+      console.warn('[Search] BRAVE_SEARCH_API_KEY not set, skipping Brave');
     }
-    
-    console.log(`[Search] Total matches found: ${matchCount}`);
-    console.log(`[Search] Valid results: ${results.length}`);
-    console.log(`[Search] Final results:`, results.map(r => r.url));
-    
-    return results;
+
+    if (serperApiKey) {
+      try {
+        const serperResults = await searchWebWithSerper(query, serperApiKey, signal);
+        if (serperResults.length > 0) {
+          console.log(`[Search] Using Serper results (${serperResults.length})`);
+          return serperResults;
+        }
+        console.warn('[Search] Serper returned no results, using fallback links');
+      } catch (error) {
+        console.warn('[Search] Serper failed, using fallback links:', error);
+      }
+    } else {
+      console.warn('[Search] SERPER_API_KEY not set, skipping Serper');
+    }
   } catch (error) {
     console.error('[Search] Error:', error);
-    // Fallback to common documentation patterns
-    const cleanName = appName.toLowerCase().replace(/\s+/g, '-');
-    return [
-      { title: `${appName} Official Docs`, url: `https://www.google.com/search?q=${encodeURIComponent(query)}` }
-    ];
   }
+
+  // Final fallback when API keys are missing or providers fail.
+  const slug = appName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  const domainToken = appName.toLowerCase().replace(/[^a-z0-9]+/g, '');
+  const fallbackResults: SearchResult[] = [
+    { title: `${appName} Keyboard Shortcuts (Google Search)`, url: `https://www.google.com/search?q=${encodeURIComponent(query)}` },
+    { title: `${appName} Keyboard Shortcuts (Brave Search)`, url: `https://search.brave.com/search?q=${encodeURIComponent(query)}` },
+  ];
+
+  if (slug) {
+    fallbackResults.push({ title: `${appName} Docs`, url: `https://docs.${slug}.com` });
+  }
+
+  if (domainToken) {
+    fallbackResults.push({ title: `${appName} Website`, url: `https://www.${domainToken}.com` });
+  }
+
+  console.log('[Search] Using fallback URL patterns');
+  return fallbackResults;
+}
+
+async function searchWebWithBrave(query: string, apiKey: string, signal: AbortSignal): Promise<SearchResult[]> {
+  const searchUrl = `https://api.search.brave.com/res/v1/web/search?q=${encodeURIComponent(query)}&count=5&search_lang=en&country=us&safesearch=moderate`;
+  console.log(`[Search:Brave] URL: ${searchUrl}`);
+
+  const response = await fetch(searchUrl, {
+    headers: {
+      'Accept': 'application/json',
+      'User-Agent': 'Mozilla/5.0 (compatible; Katasumi/1.0; +https://katasumi.dev)',
+      'X-Subscription-Token': apiKey,
+    },
+    signal,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => '');
+    throw new Error(`Brave search failed: ${response.status} ${errorText.slice(0, 200)}`);
+  }
+
+  const data = await response.json();
+  const items = Array.isArray(data?.web?.results) ? data.web.results : [];
+  const results = items
+    .map((item: any) => ({
+      title: typeof item.title === 'string' ? item.title : item.url,
+      url: typeof item.url === 'string' ? item.url : '',
+    }))
+    .filter((item: SearchResult) => item.url.startsWith('http'))
+    .slice(0, 5);
+
+  console.log(`[Search:Brave] Results: ${results.length}`);
+  return results;
+}
+
+async function searchWebWithSerper(
+  query: string,
+  apiKey: string,
+  signal: AbortSignal
+): Promise<SearchResult[]> {
+  const searchUrl = 'https://google.serper.dev/search';
+  console.log(`[Search:Serper] URL: ${searchUrl}`);
+
+  const response = await fetch(searchUrl, {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'User-Agent': 'Mozilla/5.0 (compatible; Katasumi/1.0; +https://katasumi.dev)',
+      'X-API-KEY': apiKey,
+    },
+    body: JSON.stringify({
+      q: query,
+      num: 5,
+      gl: 'us',
+      hl: 'en',
+      safe: 'active',
+    }),
+    signal,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => '');
+    throw new Error(`Serper search failed: ${response.status} ${errorText.slice(0, 200)}`);
+  }
+
+  const data = await response.json();
+  const items = Array.isArray(data?.organic) ? data.organic : [];
+  const results = items
+    .map((item: any) => ({
+      title: typeof item.title === 'string' ? item.title : item.link,
+      url: typeof item.link === 'string' ? item.link : '',
+    }))
+    .filter((item: SearchResult) => item.url.startsWith('http'))
+    .slice(0, 5);
+
+  console.log(`[Search:Serper] Results: ${results.length}`);
+  return results;
 }
 
 /**

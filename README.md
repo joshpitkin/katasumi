@@ -295,7 +295,7 @@ katasumi/
 Install Katasumi globally for instant access from any terminal:
 
 ```bash
-npm install -g katasumi
+npm install -g @katasumi/tui
 ```
 
 Then launch it with:
@@ -513,3 +513,15 @@ SOFTWARE.
 ---
 
 **Katasumi** - Always there in your corner, ready to help. 隅
+
+
+TODO:
+- test sync
+- test ai search from TUI
+- test login from TUI
+- change stripe env to prod
+- show correct version # in tui
+- more slim tui
+- custom note in readme / quake mode instructions
+- prd review
+- manual shortcut edit/entry
