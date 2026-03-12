@@ -28,8 +28,14 @@ export async function GET(request: NextRequest) {
         if (payload) {
           userId = payload.userId
           console.log('[API /api/search] Authenticated user:', userId)
+        } else {
+          console.warn('[API /api/search] Token verification failed (invalid or expired) - searching core shortcuts only')
         }
+      } else {
+        console.warn('[API /api/search] Authorization header present but token extraction failed')
       }
+    } else {
+      console.log('[API /api/search] No Authorization header - anonymous search (core shortcuts only)')
     }
 
     // Initialize database adapter and search engine

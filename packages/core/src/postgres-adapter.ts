@@ -97,11 +97,16 @@ export class PostgresAdapter implements DatabaseAdapter {
     // Query user database if userId is set
     let userShortcuts: any[] = [];
     if (this.userId) {
-      userShortcuts = await this.userClient.userShortcut.findMany({
-        where: { ...where, userId: this.userId },
-        take: limit,
-        skip: offset,
-      });
+      try {
+        userShortcuts = await this.userClient.userShortcut.findMany({
+          where: { ...where, userId: this.userId },
+          take: limit,
+          skip: offset,
+        });
+      } catch (userErr) {
+        console.error(`[PostgresAdapter] Failed to query user_shortcuts for userId ${this.userId}:`, userErr);
+        // Fall through with empty userShortcuts so core results are still returned
+      }
     }
 
     // Convert to Shortcut type
