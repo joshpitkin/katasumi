@@ -356,6 +356,14 @@ export class PostgresAdapter implements DatabaseAdapter {
   }
 
   /**
+   * Upsert a shortcut by ID (used for sync operations)
+   * Not supported on the web/Postgres adapter — sync flows into the web DB via its own API.
+   */
+  async upsertShortcut(_shortcut: Shortcut): Promise<void> {
+    throw new Error('upsertShortcut is not supported on the PostgresAdapter');
+  }
+
+  /**
    * Convert Prisma Shortcut to Shortcut type
    */
   private convertToShortcut(prismaShortcut: any): Shortcut {

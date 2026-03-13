@@ -152,6 +152,8 @@ class MockDatabaseAdapter implements DatabaseAdapter {
     return null;
   }
 
+  async upsertShortcut(_shortcut: any): Promise<void> {}
+
   async close(): Promise<void> {}
 }
 

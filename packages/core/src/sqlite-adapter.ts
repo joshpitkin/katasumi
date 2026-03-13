@@ -385,6 +385,16 @@ export class SQLiteAdapter implements DatabaseAdapter {
     return record ? this.dbToAppInfo(record) : null;
   }
 
+  async upsertShortcut(shortcut: Shortcut): Promise<void> {
+    await this.ensureInitialized();
+    const data = this.shortcutToDb(shortcut);
+    await this.userDb.shortcut.upsert({
+      where: { id: shortcut.id },
+      update: data,
+      create: { id: shortcut.id, ...data },
+    });
+  }
+
   async close(): Promise<void> {
     await Promise.all([
       this.coreDb.$disconnect(),

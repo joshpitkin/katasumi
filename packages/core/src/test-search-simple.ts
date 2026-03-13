@@ -105,6 +105,10 @@ class SimpleSQLiteAdapter implements DatabaseAdapter {
     };
   }
 
+  async upsertShortcut(_shortcut: Shortcut): Promise<void> {
+    throw new Error('upsertShortcut not implemented in SimpleSQLiteAdapter');
+  }
+
   async close(): Promise<void> {
     this.db.close();
   }
