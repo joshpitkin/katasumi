@@ -56,6 +56,12 @@ export interface DatabaseAdapter {
   deleteShortcut(id: string): Promise<boolean>;
 
   /**
+   * Upsert a shortcut by ID (used for sync operations)
+   * Creates the shortcut if it doesn't exist, updates it if it does.
+   */
+  upsertShortcut(shortcut: Shortcut): Promise<void>;
+
+  /**
    * Get all available apps
    */
   getApps(): Promise<AppInfo[]>;

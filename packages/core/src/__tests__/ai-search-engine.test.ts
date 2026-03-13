@@ -66,6 +66,7 @@ const createMockAdapter = (): DatabaseAdapter => ({
   addShortcut: vi.fn(),
   updateShortcut: vi.fn(),
   deleteShortcut: vi.fn(),
+  upsertShortcut: vi.fn(),
   getApps: vi.fn(),
   getAppInfo: vi.fn(),
   close: vi.fn(),

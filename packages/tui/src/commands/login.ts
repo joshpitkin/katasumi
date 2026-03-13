@@ -68,33 +68,30 @@ function promptInput(prompt: string): Promise<string> {
 
 function promptPassword(prompt: string): Promise<string> {
   return new Promise((resolve) => {
-    const rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout,
-    });
+    const stdin = process.stdin as NodeJS.ReadStream & { setRawMode?: (mode: boolean) => NodeJS.ReadStream };
 
-    // Mute output for password
-    const stdin = process.stdin as any;
     stdin.setRawMode?.(true);
-    
+    stdin.resume();
+    stdin.setEncoding('utf8');
+
     process.stdout.write(prompt);
-    
+
     let password = '';
-    const onData = (char: Buffer) => {
-      const byte = char.toString('utf8');
-      
-      switch (byte) {
+    const onData = (char: string) => {
+      switch (char) {
         case '\n':
         case '\r':
         case '\u0004': // Ctrl-D
           stdin.setRawMode?.(false);
-          rl.close();
+          stdin.pause();
+          stdin.removeListener('data', onData);
           process.stdout.write('\n');
           resolve(password);
           break;
         case '\u0003': // Ctrl-C
           stdin.setRawMode?.(false);
-          rl.close();
+          stdin.pause();
+          stdin.removeListener('data', onData);
           process.stdout.write('\n');
           process.exit(1);
           break;
@@ -105,14 +102,13 @@ function promptPassword(prompt: string): Promise<string> {
           }
           break;
         default:
-          // Only add printable characters
-          if (byte.charCodeAt(0) >= 32) {
-            password += byte;
+          if (char.charCodeAt(0) >= 32) {
+            password += char;
           }
           break;
       }
     };
-    
+
     stdin.on('data', onData);
   });
 }

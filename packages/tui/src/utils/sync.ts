@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { Shortcut } from '@katasumi/core';
+import { Shortcut, SourceType, DatabaseAdapter } from '@katasumi/core';
 
 const API_BASE_URL = process.env.KATASUMI_API_URL || 'https://www.katasumi.dev';
 const CONFIG_DIR = path.join(os.homedir(), '.katasumi');
@@ -131,7 +131,7 @@ export function getUserTier(): string | null {
  * Returns a result object with status information
  */
 export async function syncUserShortcuts(
-  adapter: any
+  adapter: DatabaseAdapter
 ): Promise<SyncResult> {
   // Check authentication
   const config = loadConfig();
@@ -197,54 +197,48 @@ export async function syncUserShortcuts(
 
     const data = (await response.json()) as PullResponse;
 
-    // Merge shortcuts into local database
+    // Merge shortcuts into local database using the public adapter interface
+    // which ensures the user DB is initialized before writing.
     let syncedCount = 0;
+    const errors: string[] = [];
     for (const shortcut of data.shortcuts) {
       try {
-        // Use INSERT OR REPLACE strategy - web shortcuts take precedence
-        await adapter.userDb.shortcut.upsert({
-          where: { id: shortcut.id },
-          update: {
-            app: shortcut.app,
-            action: shortcut.action,
-            keysMac: shortcut.keys.mac || null,
-            keysWindows: shortcut.keys.windows || null,
-            keysLinux: shortcut.keys.linux || null,
-            context: shortcut.context || null,
-            category: shortcut.category || null,
-            tags: shortcut.tags.join(','),
-            sourceType: shortcut.source.type,
-            sourceUrl: shortcut.source.url || null,
-            sourceScrapedAt: new Date(shortcut.source.scrapedAt),
-            sourceConfidence: shortcut.source.confidence,
-            updatedAt: new Date(shortcut.updatedAt),
+        await adapter.upsertShortcut({
+          id: shortcut.id,
+          app: shortcut.app,
+          action: shortcut.action,
+          keys: {
+            mac: shortcut.keys.mac,
+            windows: shortcut.keys.windows,
+            linux: shortcut.keys.linux,
           },
-          create: {
-            id: shortcut.id,
-            app: shortcut.app,
-            action: shortcut.action,
-            keysMac: shortcut.keys.mac || null,
-            keysWindows: shortcut.keys.windows || null,
-            keysLinux: shortcut.keys.linux || null,
-            context: shortcut.context || null,
-            category: shortcut.category || null,
-            tags: shortcut.tags.join(','),
-            sourceType: shortcut.source.type,
-            sourceUrl: shortcut.source.url || null,
-            sourceScrapedAt: new Date(shortcut.source.scrapedAt),
-            sourceConfidence: shortcut.source.confidence,
-            createdAt: new Date(shortcut.createdAt),
-            updatedAt: new Date(shortcut.updatedAt),
+          context: shortcut.context,
+          category: shortcut.category,
+          tags: shortcut.tags,
+          source: {
+            type: shortcut.source.type as SourceType,
+            url: shortcut.source.url || '',
+            scrapedAt: new Date(shortcut.source.scrapedAt),
+            confidence: shortcut.source.confidence,
           },
         });
         syncedCount++;
       } catch (error) {
-        // Log but continue with other shortcuts
-        console.error(`Failed to sync shortcut ${shortcut.id}:`, error);
+        errors.push(shortcut.id);
       }
     }
 
-    // Update sync state
+    if (errors.length > 0) {
+      return {
+        success: false,
+        message: `Sync partially failed: ${errors.length} shortcut${errors.length !== 1 ? 's' : ''} could not be saved`,
+        error: 'upsert_error',
+        shortcutsSynced: syncedCount,
+      };
+    }
+
+    // Only update sync state after all shortcuts were successfully saved.
+    // This ensures a partially-failed sync will retry on the next run.
     saveSyncState({
       lastSyncTime: data.pulledAt,
     });
