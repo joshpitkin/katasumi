@@ -30,6 +30,7 @@ export default function App() {
   const syncStatus = useAppStore((state) => state.syncStatus);
   const syncMessage = useAppStore((state) => state.syncMessage);
   const setSyncStatus = useAppStore((state) => state.setSyncStatus);
+  const setAvailableApps = useAppStore((state) => state.setAvailableApps);
 
   const handleQuit = () => {
     process.exit(0);
@@ -69,6 +70,11 @@ export default function App() {
       
       if (result.success) {
         setSyncStatus('success', result.message);
+        // If new shortcuts were downloaded, clear the cached app list so
+        // AppFirstMode reloads it and newly-synced apps become visible.
+        if ((result.shortcutsSynced ?? 0) > 0) {
+          setAvailableApps([]);
+        }
         // Clear success message after 3 seconds
         setTimeout(() => {
           if (useAppStore.getState().syncStatus === 'success') {

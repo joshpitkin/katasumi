@@ -23,6 +23,7 @@ interface Config {
     id: string;
     email: string;
     tier: string;
+    subscriptionStatus?: string;
     isPremium?: boolean;
     isEnterprise?: boolean;
   };
@@ -82,9 +83,16 @@ export function loadAIConfig(): AIConfig | undefined {
 export function isAIConfigured(): boolean {
   const config = loadConfig();
   const aiConfig = config.ai;
-  
-  // Check if using built-in AI
-  if (config.aiKeyMode === 'builtin' && config.user?.isPremium) {
+
+  // Check if using built-in AI.
+  // Accept isPremium flag (set by fetchAndSaveUserSettings after login) OR
+  // fall back to subscriptionStatus when isPremium hasn't been explicitly stored.
+  const isPremium =
+    config.user?.isPremium ||
+    config.user?.subscriptionStatus === 'active' ||
+    config.user?.subscriptionStatus === 'enterprise';
+
+  if (config.aiKeyMode === 'builtin' && isPremium) {
     return true;
   }
   

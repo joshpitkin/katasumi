@@ -8,6 +8,9 @@ import { DetailView } from './DetailView.js';
 import { logError, getUserFriendlyMessage } from '../utils/error-logger.js';
 import { useTerminalSize } from '../hooks/useTerminalSize.js';
 import { getDbAdapter } from '../utils/db-adapter.js';
+import { loadConfig } from '../utils/config.js';
+
+const API_BASE_URL = process.env.KATASUMI_API_URL || 'https://www.katasumi.dev';
 
 interface FullPhraseModeProps {
   aiEnabled: boolean;
@@ -157,19 +160,44 @@ export function FullPhraseMode({ aiEnabled, view }: FullPhraseModeProps) {
     setIsSearching(true);
     setError(null);
     try {
+      const platformFilter: Platform | undefined = platform === 'all' ? undefined : platform;
+
+      const config = loadConfig();
+      const isPremium =
+        config.user?.isPremium ||
+        config.user?.subscriptionStatus === 'active' ||
+        config.user?.subscriptionStatus === 'enterprise';
+
+      if (aiEnabled && config.aiKeyMode === 'builtin' && isPremium && config.token) {
+        // Route through the web AI endpoint using the user's bearer token
+        const body: Record<string, unknown> = { query: searchQuery };
+        if (platformFilter) body.platform = platformFilter;
+
+        const response = await fetch(`${API_BASE_URL}/api/ai`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${config.token}`,
+          },
+          body: JSON.stringify(body),
+        });
+
+        if (response.ok) {
+          const data = await response.json() as { results: Shortcut[] };
+          setResults(data.results || []);
+          return;
+        }
+        // Fall through to keyword search on API failure
+      }
+
+      // Keyword search (default / fallback)
       const adapter = getDbAdapter();
       const searchEngine = new KeywordSearchEngine(adapter);
-      
-      // Convert PlatformOption to Platform (undefined for 'all')
-      const platformFilter: Platform | undefined = platform === 'all' ? undefined : platform;
-      
-      // Use keyword search for now (AI search would go here if aiEnabled)
       const searchResults = await searchEngine.fuzzySearch(
         searchQuery,
         { platform: platformFilter },
-        30 // Get top 30 results across all apps
+        30
       );
-      
       setResults(searchResults);
     } catch (error) {
       const friendlyMessage = getUserFriendlyMessage(error);
@@ -294,15 +322,26 @@ export function FullPhraseMode({ aiEnabled, view }: FullPhraseModeProps) {
         </Box>
 
         {/* AI Status Indicator - Always visible */}
-        <Box paddingX={2} flexShrink={0}>
+        <Box paddingX={2} flexShrink={0} flexDirection="column">
           {aiEnabled ? (
-            <Text color="green">
-              💡 AI Insight: Results are ranked by AI for better relevance
-            </Text>
+            <Box flexDirection="column">
+              <Text color="green">
+                💡 AI ranking enabled — results are re-ranked by relevance using NLP
+              </Text>
+              <Text dimColor>
+                Note: AI ranking searches shortcuts already in this device&apos;s database.
+                To find shortcuts for a new app, switch to App-First Mode (Tab) and press Ctrl+A.
+              </Text>
+            </Box>
           ) : (
-            <Text color="yellow">
-              ⚡ Keyword search only - exact matches and fuzzy search
-            </Text>
+            <Box flexDirection="column">
+              <Text color="yellow">
+                ⚡ Keyword search only — exact matches and fuzzy search
+              </Text>
+              <Text dimColor>
+                Enable AI (press A) to re-rank results. To find new app shortcuts, use App-First Mode (Tab) → Ctrl+A.
+              </Text>
+            </Box>
           )}
         </Box>
 

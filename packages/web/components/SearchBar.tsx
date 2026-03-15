@@ -287,7 +287,8 @@ export function SearchBar() {
         {/* AI Search Info */}
         {showAIButton && !aiError && !aiSearchSuccess && (
           <div className="text-sm text-gray-600 dark:text-gray-400 text-center">
-            AI search uses semantic understanding to find relevant shortcuts
+            AI ranks existing shortcuts by relevance — it does not find new apps or shortcuts.
+            To discover shortcuts for a new app, use <strong>App-First Mode</strong> and press &ldquo;Use AI to search for shortcuts&rdquo;.
           </div>
         )}
       </div>

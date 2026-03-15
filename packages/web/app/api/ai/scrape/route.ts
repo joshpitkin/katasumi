@@ -244,7 +244,7 @@ async function scrapeShortcutsWithAI(
     console.log(`[AI Scrape] Found ${searchResults.length} results, fetching content...`);
     const fetchStartTime = Date.now();
     const scrapedContent = await Promise.all(
-      searchResults.slice(0, 3).map(result => 
+      searchResults.slice(0, 5).map(result => 
         fetchPageContent(result.url, controller.signal).catch(err => {
           console.warn(`[AI Scrape] Failed to fetch ${result.url}:`, err.message);
           return { url: result.url, title: result.title, content: '' };
@@ -474,8 +474,8 @@ async function fetchPageContent(
     const title = titleMatch ? titleMatch[1].trim() : url;
     
     // Limit content length
-    if (text.length > 8000) {
-      text = text.substring(0, 8000) + '...';
+    if (text.length > 12000) {
+      text = text.substring(0, 12000) + '...';
     }
     
     console.log(`[Fetch] ${url} - ${text.length} chars`);
@@ -540,8 +540,9 @@ IMPORTANT:
 - Use standard key notation: Cmd/Ctrl/Alt/Shift + letter/symbol
 - If a shortcut is the same across platforms, include it for all platforms
 - If you don't know a platform's shortcut, omit that platform from keys
-- Provide at least 10-20 common shortcuts if available
-- Focus on the most useful and commonly used shortcuts
+- Extract as many shortcuts as possible — aim for 50+ if the documentation supports it
+- Do not artificially limit the number of shortcuts; include ALL shortcuts you find in the documentation
+- Focus on the most useful and commonly used shortcuts but do not omit less-common ones
 - If you cannot find any shortcuts for this application, return an error in the "error" field
 
 Return ONLY valid JSON, no markdown formatting or explanations.`;
@@ -595,7 +596,7 @@ async function callOpenAI(
         { role: 'user', content: prompt },
       ],
       temperature: 0.3,
-      max_tokens: 4000,
+      max_tokens: 8000,
     }),
     signal,
   });
@@ -626,7 +627,7 @@ async function callAnthropic(
     },
     body: JSON.stringify({
       model,
-      max_tokens: 4000,
+      max_tokens: 8000,
       messages: [
         { role: 'user', content: prompt },
       ],
@@ -665,7 +666,7 @@ async function callOpenRouter(
       { role: 'user', content: prompt },
     ],
     temperature: 0.3,
-    max_tokens: 4000,
+    max_tokens: 8000,
   };
   
   console.log(`[OpenRouter] Request body: ${JSON.stringify(requestBody).substring(0, 200)}...`);

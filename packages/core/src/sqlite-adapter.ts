@@ -363,6 +363,57 @@ export class SQLiteAdapter implements DatabaseAdapter {
       coreApps.forEach(app => appsMap.set(app.name, app));
       userApps.forEach(app => appsMap.set(app.name, app));
 
+      // Also include apps that only exist in the user shortcuts table (e.g. synced shortcuts).
+      // These have no app_info row, so they would otherwise be invisible in the app list.
+      const userShortcuts = await this.userDb.shortcut.findMany({
+        select: { app: true, category: true, keysMac: true, keysWindows: true, keysLinux: true },
+      });
+
+      // Aggregate per-app data from shortcuts in memory
+      const shortcutAppData = new Map<string, {
+        category: string | null;
+        hasMac: boolean;
+        hasWindows: boolean;
+        hasLinux: boolean;
+        count: number;
+      }>();
+      for (const s of userShortcuts) {
+        const existing = shortcutAppData.get(s.app);
+        if (existing) {
+          existing.count++;
+          existing.hasMac = existing.hasMac || !!s.keysMac;
+          existing.hasWindows = existing.hasWindows || !!s.keysWindows;
+          existing.hasLinux = existing.hasLinux || !!s.keysLinux;
+        } else {
+          shortcutAppData.set(s.app, {
+            category: s.category,
+            hasMac: !!s.keysMac,
+            hasWindows: !!s.keysWindows,
+            hasLinux: !!s.keysLinux,
+            count: 1,
+          });
+        }
+      }
+
+      for (const [appName, data] of shortcutAppData) {
+        if (!appsMap.has(appName)) {
+          const platforms: string[] = [];
+          if (data.hasMac) platforms.push('mac');
+          if (data.hasWindows) platforms.push('windows');
+          if (data.hasLinux) platforms.push('linux');
+
+          // Synthesise a minimal app_info-shaped record so dbToAppInfo can process it
+          appsMap.set(appName, {
+            id: `synced-${appName}`,
+            name: appName,
+            displayName: appName,
+            category: data.category || 'Custom',
+            platforms: platforms.length > 0 ? platforms.join(',') : 'mac,windows,linux',
+            shortcutCount: data.count,
+          });
+        }
+      }
+
       return Array.from(appsMap.values()).map(record => this.dbToAppInfo(record));
     } catch (error) {
       if (error instanceof Error && error.message.includes('initialization failed')) {

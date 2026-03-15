@@ -13,16 +13,55 @@ interface LoginResponse {
     id: string;
     email: string;
     tier: string;
+    subscriptionStatus?: string;
   };
   message?: string;
 }
 
+interface UserSettings {
+  isPremium?: boolean;
+  isEnterprise?: boolean;
+  aiKeyMode?: string;
+}
+
+/**
+ * Fetch premium / AI settings from the web API and persist them
+ * to config.json so the TUI can honour them without a separate sync step.
+ */
+async function fetchAndSaveUserSettings(token: string): Promise<void> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/user/settings`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!response.ok) return;
+
+    const settings = (await response.json()) as UserSettings;
+    const config = loadConfig();
+
+    if (settings.aiKeyMode) {
+      config.aiKeyMode = settings.aiKeyMode as 'personal' | 'builtin';
+    }
+    if (config.user) {
+      config.user.isPremium = !!settings.isPremium;
+      config.user.isEnterprise = !!settings.isEnterprise;
+    }
+
+    saveConfig(config);
+  } catch {
+    // Non-critical — AI config can be synced later with `katasumi sync --ai-config`
+  }
+}
+
 interface Config {
   token?: string;
+  aiKeyMode?: string;
   user?: {
     id: string;
     email: string;
     tier: string;
+    subscriptionStatus?: string;
+    isPremium?: boolean;
+    isEnterprise?: boolean;
   };
   [key: string]: any;
 }
@@ -180,6 +219,8 @@ async function loginWithToken(token: string): Promise<void> {
   const config = loadConfig();
   config.token = token;
   saveConfig(config);
+
+  await fetchAndSaveUserSettings(token);
   
   console.log('Logged in successfully');
 }
@@ -230,6 +271,9 @@ export async function loginCommand(args: string[]): Promise<void> {
     config.token = result.token;
     config.user = result.user;
     saveConfig(config);
+
+    // Fetch premium / AI settings and persist them immediately
+    await fetchAndSaveUserSettings(result.token);
     
     console.log('Logged in successfully');
   } catch (error) {
