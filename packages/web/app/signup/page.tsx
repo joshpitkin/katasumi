@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, FormEvent } from 'react'
+import { Suspense, useState, FormEvent } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 
-export default function SignupPage() {
+function SignupPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
@@ -224,5 +224,13 @@ export default function SignupPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense>
+      <SignupPageContent />
+    </Suspense>
   )
 }

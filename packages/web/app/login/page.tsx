@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { Suspense, useState, FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useStore } from '@/lib/store';
 
-export default function LoginPage() {
+function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const setUser = useStore((state) => state.setUser);
@@ -219,5 +219,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginPageContent />
+    </Suspense>
   );
 }
